@@ -19,14 +19,15 @@ Experimental Design
 
 Getting started
 ----------------
-1. Download the R script and save it on an empty folder (your work directory).
-3. Set the PARAMETER section in the R script.
-4. Check Input file:
+1. Clone the R script and input/output exemple and save it on an empty folder (your work directory).
+   - If downloaded file goes to "Downloads", then copy/move files into new empty folder ("Documents" works)
+2. Set the PARAMETER section in the R script.
+3. Check Input file:
    - Should be a csv file with no special character (e.g., - % ? ! /).
    - If the data came from excel be sure to change N/A by NA
-6. Check given example of input and output ... be sure to have similar structure (header, column) file.
-7. Run the script (LOQ LOD FUNCTION + from the line CODE START HERE to the end)
-8. Output LOD and LOQ unit are similar as the input.
+4. Check given example of input and output ... be sure to have similar structure (header, column) file.
+5. Run the script (LOQ LOD FUNCTION + from the line CODE START HERE to the end)
+6. Output LOD and LOQ unit are similar as the input.
 
 Citing
 -------
