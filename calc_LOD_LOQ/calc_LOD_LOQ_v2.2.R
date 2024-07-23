@@ -27,10 +27,9 @@
 ################################################################################
 
 ##############################
-## PARAMETER
+## PARAMETER --NEED TO BE MODIFIED IF NEEDED
 #############
 workdir <- "C:/Users/drozditb/Documents/OSU_data_analysis/"
-# workdir <- dirname(rstudioapi::getSourceEditorContext()$path) # work only with R-studio
 
 setwd(workdir)
 
@@ -39,11 +38,17 @@ df <- read.table(file.choose(),sep= ",", # select data
 head(df)
 
 # choose the column for concentration and for species to measured
+# not necessary if you have similar input than the example
 nx <- 1 ## concentration 
 ny <- 2:ncol(df)  ##species list
 
 plot.opt <- "YES" # do you want a plot plotted in you screen? YES or NO
 set.thres <- 200  # set the threshold on how many fold the range of data is accepted.
+################################################################################
+###############################################################################
+
+## DO NOT MODIFIED SOMETHING BELOW JUST RUN THE CODE ####
+
 ################################################################################
 ###############################################################################
 ### LOQ LOD FUNCTION
