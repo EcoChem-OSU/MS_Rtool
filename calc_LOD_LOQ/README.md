@@ -21,7 +21,7 @@ Getting started
 ----------------
 1. Clone the R script and input/output exemple and save it on an empty folder (your work directory).
    - If downloaded file goes to "Downloads", then copy/move files into new empty folder ("Documents" works)
-2. Set the PARAMETER section in the R script.
+2. Modified if needed the PARAMETER section in the R script.
 3. Check Input file:
    - Structure of the input: first column (could be selected using nx in the script) with the concentration value
                              sequence of column containing the area count (ny in the script) or intensity measured (one per
