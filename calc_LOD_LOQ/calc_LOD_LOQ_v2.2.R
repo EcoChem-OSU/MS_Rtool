@@ -5,8 +5,8 @@
 # v2.2 mod B.Droz - 2024-01-22 @ Oregon State University
 
 ## Description:
-## Input should be a csv file with special character (e.g., - % ? ! /)
-## Exemple of input and output ... be sure to have similar structure file
+## Input should be a csv file without special character (e.g., - % ? ! /)
+## Check careffuly example of input ... be sure to have similar structure file
 
 ####################################################################
 ## Experimental aspect : (---- IMPORTANT TO SET YOUR EXPERIMENT ---)
@@ -29,14 +29,20 @@
 ##############################
 ## PARAMETER --NEED TO BE MODIFIED IF NEEDED
 #############
+## set your working directory
 workdir <- "C:/Users/drozditb/Documents/OSU_data_analysis/"
 
-setwd(workdir)
+setwd(workdir) # do not change it
 
+# open window to choose you data set
 df <- read.table(file.choose(),sep= ",", # select data
                  header=TRUE,na.strings = "NA" ) # not number should be NA
-head(df)
+head(df) # check your data twice. Do not need to change it 
 
+######## ADVANCE PARAMETER #################
+## If the input is similar and you follow vial recomendation you do not need to change it
+## But could be helpfull in some case
+#####################################
 # choose the column for concentration and for species to measured
 # not necessary if you have similar input than the example
 nx <- 1 ## concentration 
