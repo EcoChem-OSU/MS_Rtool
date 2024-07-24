@@ -19,7 +19,7 @@ Experimental Design
 
 Getting started
 ----------------
-1. Clone the R script and input/output exemple and save it on an empty folder (your work directory).
+1. Clone the R script/input example and save it on an empty folder (your work directory).
    - If downloaded file goes to "Downloads", then copy/move files into new empty folder ("Documents" works)
 2. Modified if needed the PARAMETER section in the R script.
 3. Check Input file:
