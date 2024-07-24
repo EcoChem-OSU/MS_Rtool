@@ -22,15 +22,17 @@ Getting started
 1. Clone the R script/input example and save it on an empty folder (your work directory).
    - If downloaded file goes to "Downloads", then copy/move files into new empty folder ("Documents" works)
 2. Modified if needed the PARAMETER section in the R script.
+   - Ususally you need to change you work directory (workdir) only
 3. Check Input file:
    - Structure of the input: first column (could be selected using nx in the script) with the concentration value
                              sequence of column containing the area count (ny in the script) or intensity measured (one per
                              chemical species) for each concentration (NA could be set for no value).  
    - Should be a csv file with no special character (e.g., - % ? ! /).
    - If the data came from excel be sure to change N/A by NA.
-   - Double check given example of input and output if not sure ... be sure to have similar structure (header, column) file.
-4. Run the script (LOQ LOD FUNCTION + from the line CODE START HERE to the end).
+   - Double check given example of input if not sure ... be sure to have similar structure (header, column) file.
+4. Run the script (Select all and run in once).
 5. Output LOD and LOQ unit are similar as the input.
+6. Find out the Output in the workdir you set in the script
 
 Citing
 -------
