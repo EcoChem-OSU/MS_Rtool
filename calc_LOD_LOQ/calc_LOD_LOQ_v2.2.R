@@ -4,7 +4,7 @@
 # v1.0 Trever
 # v2.2 mod B.Droz - 2024-01-22 @ Oregon State University
 
-############
+################################################################################
 # Reference
 ## Vial, J.; Jardy, A. Experimental Comparison of the Different Approaches 
 ##              To Estimate LOD and LOQ of an HPLC Method. 
