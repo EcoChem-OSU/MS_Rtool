@@ -4,21 +4,6 @@
 # v1.0 Trever
 # v2.2 mod B.Droz - 2024-01-22 @ Oregon State University
 
-## Description:
-## Input should be a csv file without special character (e.g., - % ? ! /)
-## Check careffuly example of input ... be sure to have similar structure file
-
-####################################################################
-## Experimental aspect : (---- IMPORTANT TO SET YOUR EXPERIMENT ---)
-####################################################################
-## - Area count (or intensity) should be evaluate in function of the concentration
-## - Vial(1999) recommend to have at least 5 data points to make the calculation
-## - data should be spread within 200 fold (e.g., 1 to 200 or 200 to 40000) 
-##    to follow paper experimental setting, data closer to LOD are better.
-## - Ideally one or two point are lower than the expected LOD
-## - Do not include conc 0 and area 0 into the calculation
-## - Data point do necessarly need to be equal separate (weight normalization)
-
 ############
 # Reference
 ## Vial, J.; Jardy, A. Experimental Comparison of the Different Approaches 
@@ -27,7 +12,7 @@
 ################################################################################
 
 ##############################
-## PARAMETER --NEED TO BE MODIFIED IF NEEDED
+## PARAMETER -- MODIFIED IF NEEDED
 #############
 ## set your working directory
 workdir <- "C:/Users/drozditb/Documents/OSU_data_analysis/"
@@ -53,7 +38,7 @@ set.thres <- 200  # set the threshold on how many fold the range of data is acce
 ################################################################################
 ###############################################################################
 
-## DO NOT MODIFIED SOMETHING BELOW JUST RUN THE CODE ####
+## DO NOT MODIFIED BELOW JUST RUN THE CODE ####
 
 ################################################################################
 ###############################################################################
