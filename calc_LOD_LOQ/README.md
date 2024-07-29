@@ -30,9 +30,8 @@ Getting started
    - Double check given example of input if not sure ... be sure to have similar structure (header, column) file.
 3. Do not modified past the PARAMETER section in the R script.
    - Ususally you need to change you work directory (workdir) only
-4. Run the script (Select all and run in once).
-5. Output LOD and LOQ unit are same as the input.
-6. Find out the Output in the workdir you set in the script
+4. Run the script (Select all and run in once). 
+5. Find out an Output file with the calculation in the workdir you set in the script. The output will contain LOD, LOQ, R2 and       RMSE of the model for each species you introduce in the input. Output LOD and LOQ unit are same as the input.
 
 Citing
 -------
