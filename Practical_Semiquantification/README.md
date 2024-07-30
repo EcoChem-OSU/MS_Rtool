@@ -6,10 +6,10 @@ Perform semiquantification average calibration using the area count of the targe
 divided by the average area count of surrogate (deutered intern standard) in 
 function of target concentration in units of nmoles/L. Use a weighted linear regression model.
 
-The scripts in this repository organized into 2 steps
-1.cali_pract_semiquantif.R: performed a calibration of the semiquantitive model.
-2.pred_pract_semiquantif.R: applied the calibrated model to suspect area count to estimate the concentration.
-the file FUN_Pract_semiquantif.R conain home made funtion necessay or the cali_pract_semiquantif but should ne be modified.
+The process is divided into 2 R scripts that should run in numerical order as identified in the file name.  
+1.cali_pract_semiquantif.R: performed a calibration of the semiquantitive model.  
+2.pred_pract_semiquantif.R: applied the calibrated model to suspect area count to estimate the concentration.  
+The file FUN_Pract_semiquantif.R conain home made funtion necessay or the cali_pract_semiquantif but should ne be modified.
 
 Terminology
 ----------
@@ -53,4 +53,4 @@ Getting Started
 
 Citing
 -------
-Cao, D.; Schwichtenberg, T.; Duan, C.; Xue, L.; Muensterman, D.; Field, J. Practical semiquantification strategy for estimating suspect per- and polyfluoroalkyl substance (PFAS) concentrations. J. Am. Soc. Mass Spectrom. 2023, 34 (5), 939–947. DOI: 10.1021/jasms.3c00019.
+Cao, D.; Schwichtenberg, T.; Duan, C.; Xue, L.; Muensterman, D.; Field, J. Practical semiquantification strategy for estimating suspect per- and polyfluoroalkyl substance (PFAS) concentrations. J. Am. Soc. Mass Spectrom. 2023, 34 (5), 939–947. [DOI: 10.1021/jasms.3c00019](https://doi.org/10.1021/jasms.3c00019).
