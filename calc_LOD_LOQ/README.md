@@ -22,7 +22,7 @@ Getting started
 1. Clone the R script/input example and save it on an empty folder (your work directory).
    - If downloaded file goes to "Downloads", then copy/move files into new empty folder ("Documents" works)
 2. Check Input file:
-   - Structure of the input: first column (could be selected using nx in the script) with the concentration value
+   - Structure of the input: first column (could be selected using nx in the script) with the exact concentration value
                              sequence of column containing the area count (ny in the script) or intensity measured (one per
                              chemical species) for each concentration (NA could be set for no value).  
    - Should be a csv file with no special character (e.g., - % ? ! /).
