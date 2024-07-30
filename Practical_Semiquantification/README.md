@@ -7,8 +7,9 @@ divided by the average area count of surrogate (deutered intern standard) in
 function of target concentration in units of nmoles/L. Use a weighted linear regression model.
 
 The scripts in this repository organized into 2 steps
-1. cali_pract_semiquantif: performed a calibration of the semiquantitive model.
-2. pred_pract_semiquantif: applied the calibrated model to suspect area count to estimate the concentration.
+1.cali_pract_semiquantif.R: performed a calibration of the semiquantitive model.
+2.pred_pract_semiquantif.R: applied the calibrated model to suspect area count to estimate the concentration.
+the file FUN_Pract_semiquantif.R conain home made funtion necessay or the cali_pract_semiquantif but should ne be modified.
 
 Terminology
 ----------
@@ -25,15 +26,30 @@ Input Files Needed
 > [!IMPORTANT]
 > **CHECK THAT all chemical names are correctly and similarly written in the _calibration curve_ and _list of the targets and surrogates_ files. _Suspects area count_ MUST contain the same list of surrogate than in _list of the targets and surrogates_ used to calibrate the model. All species not identified in this list are considered as suspect.**
 
-
 Getting Started
 ----------------
 1. Clone the R script/input example and save it on an empty folder (your work directory).
    - If downloaded file goes to "Downloads", then copy/move files into new empty folder.
-2. 
-
-3. The script create automatically an output folder containing all info of the calibrated model.
-
+2. Open the script 1.cali_pract_semiquantif.R and modified the PARAMETER needed.
+3. Do not modified past the PARAMETER section in the R script.
+4. Run the script (Select all and run in once).
+5. The script create automatically an output folder containing:
+	- Model_Perfomance: text file with the performance and detail parameter of the model
+	- cali_lm_weight: calibrate model (R-object)
+	- cali_curve_copy:
+	- cali_dataset
+	- predicted_interval
+	- target_surrogatet_list_copy
+	- Semiquant_cali_plot
+	- Semiquant_residual_plot
+6. CHECK OUTPUT 
+7. Open the script 2.pred_pract_semiquantif.R and modified the PARAMETER needed.
+8. Do not modified past the PARAMETER section in the R script.
+9. Run the script (Select all and run in once).
+10. A pop-up window should appear to select you data.
+11. Check the result in: suspect_pred_conc.csv
+> [!CAUTION]
+> **The results in the suspect_pred_conc.csv are express in mol values similar as the calibrate model Check unit in the Model_Perfomance file.**
 
 Citing
 -------
