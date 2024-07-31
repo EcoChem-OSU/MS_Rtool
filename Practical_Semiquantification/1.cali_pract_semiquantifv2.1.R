@@ -56,33 +56,9 @@ output.folder.name <- "NEG_semiquant_model" #name the output folder
 library(tidyverse)
 library(readxl)
 library(MetaboCoreUtils)
-source("FUN_Pract_semiquantifv2.0.R") # hand made function from Cao 2023
+source("FUN_Pract_semiquantifv2.0.R") # hand made function from Cao 2023 and Droz 2024
 
-# FUNCTION check and produced subDir folder
-###########################################
-#February 2017 -- mod on the 2022-08-18 
-creat.subDir <- function (mainDir,subDir)
-{
-  if ( dir.exists(paste(mainDir,"/",subDir, sep="") ) ){
-    
-    i <- 1
-    while( file.exists( paste(mainDir,"/",subDir,"_",i, sep="") ) )
-    {i <-i+1}
-    
-    dir.create(file.path(mainDir, paste(subDir,"_",i, sep="") ))
-    outpath <- file.path(mainDir, paste(subDir,"_",i, sep=""))
-    
-  } else {
-    dir.create(file.path(mainDir, subDir))
-    outpath <- file.path(mainDir, subDir)
-  }
-  
-  return(outpath)
-}
 
-# creat output
-date <- Sys.Date()
-output <- creat.subDir(workdir,paste(date,output.folder.name,sep="") )
 
 #####################Step 1: Import Dataset ##########################################
 #Read data
@@ -95,10 +71,6 @@ write.table(df.cal, file=paste(output,"/cali_curve_copy.csv",sep=""),
 
 write.table(df.compounds, file=paste(output,"/target_surrogatet_list_copy.csv",sep=""),
             sep=",", append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
-
-
-write.csv(, file=paste(output,"/cali_curve_copy.csv",sep="") )
-write.csv(df.compounds, file=paste(output,"/target_surrogatet_list_copy.csv",sep="") )
 
 names(df.cal) <- sub("^X", "", names(df.cal)) # remove X if start by number
 
