@@ -83,3 +83,59 @@ table_uncertainty <- function(x_series,alpha,data_set,index){
 
 ####################Function we use for uncertainty###################################
 ####################Please do not change these########################################
+###EXTRA FUNCTION
+###########################################
+# FUNCTION check and produced subDir folder
+###########################################
+#February 2017 -- mod on the 2022-08-18 
+creat.subDir <- function (mainDir,subDir)
+{
+  if ( dir.exists(paste(mainDir,"/",subDir, sep="") ) ){
+    
+    i <- 1
+    while( file.exists( paste(mainDir,"/",subDir,"_",i, sep="") ) )
+    {i <-i+1}
+    
+    dir.create(file.path(mainDir, paste(subDir,"_",i, sep="") ))
+    outpath <- file.path(mainDir, paste(subDir,"_",i, sep=""))
+    
+  } else {
+    dir.create(file.path(mainDir, subDir))
+    outpath <- file.path(mainDir, subDir)
+  }
+  
+  return(outpath)
+}
+
+# creat output
+date <- Sys.Date()
+output <- creat.subDir(workdir,paste(date,output.folder.name,sep="") )
+################################################################################
+#########################################
+## Cheak and download or releaod package
+## v1.0 Emmanuel Rey 2013 EAWAG
+########################################
+# check library version and load library
+check.lib <- function(package.list) {
+  
+  for(pkg in package.list){
+    
+    libTest <- try(library(pkg,character.only=TRUE),silent=TRUE)
+    
+    if(class(libTest)=='try-error'){
+      
+      updteTest <- try(install.packages(pkg))   
+      
+      if(class(updteTest)=='try-error'){update.packages(pkg)}
+      
+      else{install.packages(pkg)}
+      
+      libTest <- try(library(pkg,character.only=TRUE),silent=TRUE)
+      
+      print(pkg)
+      
+      }
+    }
+  }
+
+
