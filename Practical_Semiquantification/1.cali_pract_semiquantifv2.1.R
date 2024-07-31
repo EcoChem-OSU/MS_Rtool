@@ -22,7 +22,7 @@
 ## PARAMETER -- MODIFIED IF NEEDED
 ############
 ## set your working directory
-workdir <- "R:/Boris Droz/script_HRMS/Practical Semiquantification"
+workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Practical_Semiquantification"
 
 setwd(workdir) # do not change it
 
@@ -53,8 +53,15 @@ output.folder.name <- "NEG_semiquant_model" #name the output folder
 
 ################################################################################
 ###############################################################################
+
 source("FUN_Pract_semiquantifv2.0.R") # hand made function from Cao 2023 and Droz 2024
-check.lib (c("tidyverse","readxl","MetaboCoreUtils","dplyr") )
+
+# creat output
+date <- Sys.Date()
+output <- creat.subDir(workdir,paste(date,output.folder.name,sep="") )
+# check package 
+check.lib(c("tidyverse","readxl","MetaboCoreUtils","dplyr") )
+
 #####################Step 1: Import Dataset ##########################################
 #Read data
 df.cal <- read.csv(ccal, header= TRUE)

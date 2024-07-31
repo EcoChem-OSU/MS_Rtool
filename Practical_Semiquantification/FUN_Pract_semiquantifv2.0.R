@@ -107,9 +107,6 @@ creat.subDir <- function (mainDir,subDir)
   return(outpath)
 }
 
-# creat output
-date <- Sys.Date()
-output <- creat.subDir(workdir,paste(date,output.folder.name,sep="") )
 ################################################################################
 #########################################
 ## Cheak and download or releaod package
