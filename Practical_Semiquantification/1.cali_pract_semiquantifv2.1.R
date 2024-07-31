@@ -53,13 +53,8 @@ output.folder.name <- "NEG_semiquant_model" #name the output folder
 
 ################################################################################
 ###############################################################################
-library(tidyverse)
-library(readxl)
-library(MetaboCoreUtils)
 source("FUN_Pract_semiquantifv2.0.R") # hand made function from Cao 2023 and Droz 2024
-
-
-
+check.lib (c("tidyverse","readxl","MetaboCoreUtils","dplyr") )
 #####################Step 1: Import Dataset ##########################################
 #Read data
 df.cal <- read.csv(ccal, header= TRUE)
