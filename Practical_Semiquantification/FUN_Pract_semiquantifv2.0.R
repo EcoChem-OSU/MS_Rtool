@@ -131,8 +131,9 @@ check.lib <- function(package.list) {
       
       print(pkg)
       
-      }
     }
-  }
+    
+    } #end loop for
+  }# end function
 
 

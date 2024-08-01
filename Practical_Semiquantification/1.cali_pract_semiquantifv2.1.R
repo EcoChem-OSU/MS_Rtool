@@ -60,7 +60,17 @@ source("FUN_Pract_semiquantifv2.0.R") # hand made function from Cao 2023 and Dro
 date <- Sys.Date()
 output <- creat.subDir(workdir,paste(date,output.folder.name,sep="") )
 # check package 
-check.lib(c("tidyverse","readxl","MetaboCoreUtils","dplyr") )
+check.lib(c("tidyverse","dplyr") )
+
+# check lib metabocore
+libTest <- try(library("MetaboCoreUtils",character.only=TRUE),silent=TRUE)
+
+if(class(libTest)=='try-error'){
+
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("MetaboCoreUtils")}
 
 #####################Step 1: Import Dataset ##########################################
 #Read data
