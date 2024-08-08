@@ -29,7 +29,8 @@ setwd(workdir) # do not change it
 ccal <- "060121_ccal.csv" # file with data of your calibration curve - 
                           ## concentration in function of Area count 
                           ## concentration should be the first column
-unit.input <- "nmol/L" # unit of the input data concentration should be specified
+unit.label <- "nmol/L" # unit of the concentration label for graph do not 
+                      # influence the calculation but should be specified
 
 compounds <-"target_surrogatet_list.csv" # file with compounds information -
                       ## Name of compounds --> should be similar in all files ccal and compounds
@@ -38,8 +39,8 @@ compounds <-"target_surrogatet_list.csv" # file with compounds information -
                       ## Type: Target (std) or surrogate (internal std)
   
 In.mass <- "YES" # option for mass in gram or substance in mole based unit 
-                # Yes if unit from the calicurve are in ng/L, g/L,.... default
-                # No if unit are in mmol/L, mol/L,.... 
+                # Yes if input unit from the calicurve are in ng/L, g/L,.... default
+                # No if input unit are in mmol/L, mol/L,.... 
 
 alpha <- 0.05 # confidence interval for the incertitude calculation 
               ## default 0.05
@@ -133,7 +134,7 @@ png(filename = paste(output,"/Semiquant_cali_plot.png",sep=""),width = 480, heig
 par(mar=c(5, 5, 2, 2) )
 ####plot this weighted linear regression
 plot(data_set$x,data_set$response,
-     xlab=paste("Target concentration (", unit.input,")",sep=""),
+     xlab=paste("Target concentration (", unit.label,")",sep=""),
        ylab= "Response (A_target/Avg A_surrogate)",
      las=1,
      pch=19)
@@ -147,7 +148,7 @@ png(filename = paste(output,"/Semiquant_residual_plot.png",sep=""),width = 480, 
 par(mar=c(5, 5, 2, 2) )
 ####plot this weighted linear regression
 plot(data_set$x,cal$residuals,
-     xlab=paste("Target concentration (", unit.input,")",sep=""),
+     xlab=paste("Target concentration (", unit.label,")",sep=""),
      ylab= "Residual",
      las=1,
      pch=19)
@@ -167,7 +168,7 @@ cat("######################################################",file= f.info,append
 cat("R-script 1.cali_pract_semiquantifv2.0",file= f.info,append=TRUE, sep="\n")
 cat("######################################################",file= f.info,append=TRUE, sep="\n")
 cat(paste("Model name:", output.folder.name), file= f.info,append=TRUE, sep="\n")
-cat(paste("Unit:", unit.input), file= f.info,append=TRUE, sep="\n")
+cat(paste("Unit:", unit.label), file= f.info,append=TRUE, sep="\n")
 cat(paste("nb target:",ncol(df.cal[,names(df.cal)%in%n.targ]) ),
     file= f.info,append=TRUE, sep="\n")
 cat(paste("nb surrogate:",ncol(df.cal[,names(df.cal)%in%n.sur]) ),
