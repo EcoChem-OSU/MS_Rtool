@@ -4,17 +4,22 @@ Description
 -----------
 Perform semiquantification average calibration using the area count of the targets
 divided by the average area count of surrogate (deutered intern standard) in 
-function of target concentration in units of nmoles/L. Use a weighted linear regression model.
+function of target concentration in units of mol/L.  
+The model used a weighted linear regression model. 
 
 The process is divided into 2 R scripts that should run in numerical order as identified in the file name.  
 1.cali_pract_semiquantif.R: performed a calibration of the semiquantitive model.  
 2.pred_pract_semiquantif.R: applied the calibrated model to suspect area count to estimate the concentration.  
-The file FUN_Pract_semiquantif.R conain home made funtion necessay or the cali_pract_semiquantif but should ne be modified.
+The file FUN_Pract_semiquantif.R: contain home made function necessary for the ```cali_pract_semiquantif``` but should NOT be modified.
 
 Terminology
 ----------
 Target: refer to the compound of interest.
 Surrogate: refer to the isotopic labeled compounds used as intern standard to normalize the response factor.
+
+Parameter - input of the workflow 
+-------------------------  
+The script could handle input calibration curve (ccal input) data in mol/L or g/L . In case of g/L unit the formula of each compound provide in the target_surrogatet_list input is used to convert the g/L into mol/L. In.mass option defined if mol/L or g/L unit is used.  
 
 Input Files Needed
 ------------------
