@@ -7,7 +7,7 @@
 ##
 ## Description:
 ################
-## Compute an semiquantitative average calibration using the area of target
+## Compute a semiquantitative average calibration using the area of target
 ## divided by the average area of surrogate (deutered intern stad) areas in 
 ## function of target concentration in units of nmoles/L.
 ## Use a weighted linear regression models.
@@ -29,15 +29,12 @@ setwd(workdir) # do not change it
 ccal <- "060121_ccal.csv" # file with data of your calibration curve - 
                           ## concentration in function of Area count 
                           ## concentration should be the first column
-unit.label <- "nmol/L" # unit of the concentration label for graph do not 
+unit.label <- "nmol/L" # unit of the concentration label for graph does not 
                       # influence the calculation but should be specified
 
 compounds <-"target_surrogatet_list.csv" # file with compounds information -
                       ## Name of compounds --> should be similar in all files ccal and compounds
-                      ## Chemical formula --> be aware of the format  
-                      ##                  type "?calculateMass" 
-                      ## Type: Target (std) or surrogate (internal std)
-  
+                      
 In.mass <- "YES" # option for mass in gram or substance in mole based unit 
                 # Yes if input unit from the calicurve are in ng/L, g/L,.... default
                 # No if input unit are in mmol/L, mol/L,.... 
