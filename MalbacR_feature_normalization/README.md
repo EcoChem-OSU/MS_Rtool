@@ -2,7 +2,7 @@ MalbacR: Script to test batch correction methods for features normalization
 --------------------------------------------------------------------------
 Description
 -----------
-Provide metric to evaluate if normalization of the feature is needed (Ding, 2022).
+Provide metric to evaluate if normalization of the feature is needed (Ding, 2022).  
 Test several normalization methods for HRMS data provide (Leach, 2023).
 
 Script is an adapted version based on [malbacR repository](https://github.com/pmartR/malbacR) with some metric to help you over the selection of the method.
