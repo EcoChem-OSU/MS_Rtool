@@ -24,8 +24,8 @@ devtools::install_github("pmartR/pmartR@*release")
 Input/Output
 ------------
 Input:
-- featureGroups.txt file coming from a peak picking method 
-- the data need to have some QC (pooled samples)  
+- FeatureGroups.txt file coming from a peak picking method 
+- Data need to have some QC (pooled samples)  
   
 Output:  
 - %Relative standard deviation (RSD) of feature intensity for all QC (QC_boplot.png)
@@ -36,5 +36,5 @@ Output:
 
 Citing
 -------
-Leach, D. T.; et al. Anal. Chem. 2023, 95 (33), 12195-12199. [https://doi.org/10.1021/acs.analchem.3c01289](https://doi.org/10.1021/acs.analchem.3c01289)
+Leach, D. T.; et al. Anal. Chem. 2023, 95 (33), 12195-12199. [https://doi.org/10.1021/acs.analchem.3c01289](https://doi.org/10.1021/acs.analchem.3c01289).  
 Ding, X.; et al. Anal. Chem. 2022, 94 (21), 7500-7509. [https://doi.org/10.1021/acs.analchem.1c05502](https://doi.org/10.1021/acs.analchem.1c05502)
