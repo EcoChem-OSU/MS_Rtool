@@ -11,23 +11,13 @@
 ## Provide metric to evaluate if normalization of the feature is needed
 ## Test several normalization method for HRMS data
 ## 
-## Could be used for NMR or other data type see tutorial on the github page 
-## https://github.com/pmartR/malbacR?tab=readme-ov-file
-## METRIC DEFINED TO SELECT BEST METHOD are explained in 
-## https://doi.org/10.1021/acs.analchem.1c05502.
-## 
-## READ THIS PAPER BEFORE STARTING
-
-
-
 ###############################################################################
 # Reference:
 ##  Leach, D. T.; et al. Anal. Chem. 2023, 95 (33), 12195-12199. 
 ##             https://doi.org/10.1021/acs.analchem.3c01289.
 ## Ding, X.; et al. Anal. Chem. 2022, 94 (21), 7500-7509. 
 ##            https://doi.org/10.1021/acs.analchem.1c05502
-
-
+##
 ###############################################################################
 ## Parameter
 ############
