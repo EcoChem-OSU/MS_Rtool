@@ -20,7 +20,7 @@ Surrogate: refer to the isotopic labeled compounds used as intern standard to no
 Input Files Needed
 ------------------
 > [!IMPORTANT]
-> **CHECK input examples. Should be a csv file with no special character (e.g., - % ? ! /). If the data came from excel be sure to change N/A by NA.**
+> **Provided input example is from the cited paper fig 1 g. Check example input to see format needed. Should be a csv file with no special character (e.g., - % ? ! /). If the data came from excel be sure to change N/A by NA.**
 - Calibration curve (example: ```060121_ccal.csv```): first column content the exact concentration value and follow column contain area count (one per chemical species) for each concentration. The script could handle input calibration curve ```ccal``` input data in mol/L or g/L . In case of g/L unit the formula of each compound provide in the ```target_surrogatet_list``` input is used to convert the g/L into mol/L. ```In.mass``` option defined if mol/L or g/L unit is used. 
 - List of the targets and surrogates (example: ```target_surrogatet_list.csv```): identified the name of each chemical species, formula necessary for mol calculation and type of species (_target_ or _surrogate_). Be sure that chemical formula follow the format of the example. If not sure type ```?calculateMass```
 - Suspects area count (example: ```susp_area_count.csv```): area count one column per suspect and one raw per samples
