@@ -13,10 +13,9 @@ Tutorial on [malbacR repository](https://github.com/pmartR/malbacR) and on [pmar
 
 Installation
 -----------
-'''
+'''r
 devtools::install_github("pmartR/malbacR")
-'''
-'''
+
 devtools::install_github("pmartR/pmartR@*release")
 '''
 
