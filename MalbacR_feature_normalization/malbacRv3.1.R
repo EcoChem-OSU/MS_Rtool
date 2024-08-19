@@ -22,7 +22,7 @@
 ## Parameter
 ############
 ## set your working directory
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/UKL/"
+workPath <- "R:/Boris Droz/Proj_UKL_2023/data_analysis/"
 
 setwd(workPath) # do not change it
 
