@@ -10,7 +10,7 @@ YOU need a internet connection to compute the last part of the script
 
 Getting started
 ----------------
-[Tutorial on patRoon][(https://rickhelmus.github.io/patRoon/articles/tutorial.html) and more advance information on  [patron Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
+[Tutorial on patRoon](https://rickhelmus.github.io/patRoon/articles/tutorial.html) and more advance information on  [patron Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
 
 Installation
 -----------
