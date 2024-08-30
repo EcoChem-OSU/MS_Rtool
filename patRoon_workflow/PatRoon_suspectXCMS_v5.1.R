@@ -26,17 +26,17 @@
 ############
 ## path
 # workPath <- "D:/Patroon_NTS"
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/NIST_20240501/"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/WWT_testcode"
 
 ## Input data - 
-sample.list <- "sample_list_nist.csv"
+sample.list <- "sample_list_testOMS.csv"
 
 ## Optimized XCMS parameters for peak picking
 opt.ppm = 25
 opt.pw = c(3, 143) # peak width min and max
 
 ## Parameter for filtering check patroon  help(filter)
-min.intensity.thr = ## absMinIntensity, typical range between 100 - 1000
+min.intensity.thr = 200## absMinIntensity, typical range between 100 - 1000
 rp.feature = 1 #relMinReplicateAbundance 
 bk.sa.thr = 3 # blankThreshold 
 
