@@ -2,8 +2,8 @@
 #### MALBAC_R
 ################################################################################
 ################################################################################
-# version:3.0 
-## Date: June 2024
+# version:3.3
+## Date: September 2024
 ## Author: Boris Droz @ Oregon State University
 ################################################################################
 ## Description:
@@ -22,14 +22,15 @@
 ## Parameter
 ############
 ## set your working directory
-workPath <- "R:/Boris Droz/Proj_UKL_2023/data_analysis/"
+## workPath <- "R:/Boris Droz/Proj_UKL_2023/data_analysis/"
+workPath <- "C:/Users/bodro/Documents/Actual/Malbac/"
 
 setwd(workPath) # do not change it
 
-inpath <- paste(workPath ,"/output/testfiles/",sep="")
+inpath <- paste(workPath ,"/output/",sep="")
 
-fn.df <- "/featureGroups.txt" # feature list grouped
-fn.sample.list <- "input/sample_list_UKL2023.csv" # sample list with all info see example
+fn.df <- "/raw_aligned_grouped.csv" # feature list grouped
+fn.sample.list <- "input/sample_list_UKL2023_outliersRemoved.csv" # sample list with all info see example
 
 thr_range <- c(100,500) # range to replace NA and zero should be same than 
                         # threshold used in peak picking filtering
@@ -82,8 +83,15 @@ date <- Sys.Date()
 folder <- paste("/",date,"_MALBAC_R", sep="")
 outpath <- creat.subDir(inpath, folder)
 
+f.info <- paste(outpath,"/AA_INFO_RUN_README.txt",sep="")
+cat( paste("*** malbacR result ****", Sys.Date()), file= f.info, append=TRUE, sep="\n")
+cat( "##################################", file= f.info, append=TRUE,sep="\n")
+cat( paste("Featuregroup:", fn.df), file= f.info, append=TRUE,sep="\n")
+cat( paste("SampleList:", fn.sample.list), file= f.info, append=TRUE,sep="\n")
+cat( "      ", file= f.info, sep="\n")
+
 ## load data
-df <- read.table( paste(inpath,fn.df,sep=""), sep="\t", header=TRUE)
+df <- read.csv( paste(inpath,fn.df,sep=""), sep=",")
 sample.list <- read.csv(fn.sample.list, sep=",")
 
 # get SA and QC only
@@ -198,6 +206,8 @@ if (length (unique(f_data$batch) ) >1){
         f_data$batch <- match(f_data$batch, myLetters)
   
   }else{
+    cat( paste("*** Only one batch --> 3 equal batches are created  ---", Sys.Date()), file= f.info, sep="\n")
+   
         incr<- ceiling(nrow(f_data)/3)
         f_data$batch[1:incr] <- 1
         f_data$batch[(incr+1):(2*incr)] <- 2
@@ -288,7 +298,7 @@ tiger <- edata_transform(omicsData = tiger_abundance,
                                data_scale = "log2")
 
 # QC-RLSC
-qcrlsc <- bc_qcrlsc(omicsData = mymetabo_2log,
+qcrlsc <- tryCatch( { bc_qcrlsc(omicsData = mymetabo_2log,
                           block_cname = "batch",
                           qc_cname = "group", 
                           qc_val = "QC", 
@@ -296,8 +306,14 @@ qcrlsc <- bc_qcrlsc(omicsData = mymetabo_2log,
                           missing_thresh = 0.5, 
                           rsd_thresh = 0.3, 
                           backtransform  = FALSE,
-                          keep_qc = TRUE)
-
+                          keep_qc = TRUE)}, 
+                  error = function(e) {
+                "The first and last sample run for each batch must be a QC sample" })
+if (is.character(qcrlsc) ) {
+  cat( "qcrlsc not run the first and last sample run for each batch must be a QC sample",
+       file= f.info, append=TRUE, sep="\n")
+}
+  
 # SERRF 
 serrf_abundance <- bc_serrf(omicsData = mod_mymetabo,
                             sampletype_cname = "group",
@@ -332,20 +348,25 @@ wave_abundance <- bc_waveica(omicsData = mymetabo,
                                    #negative_to_na = TRUE)
 wave <- edata_transform(omicsData = wave_abundance, data_scale = "log2")
 
-
-# all.results <-list(range,power,pareto,tiger, qcrlsc, 
-#                    serrf, qcrfsc,combat, eigen, wave)
+## MERGE ALL NORM MODEL>>>>>
 ##################################################
-##SELECT MANUALLY THE MODEL>>>>>
-##################################################
-all.results <-list(mymetabo,range,power,pareto, tiger,#qcrlsc,
+all.results <-list(mymetabo,range,power,pareto, tiger,qcrlsc,
                    serrf, qcrfsc,
                     combat, eigen,wave)
 
 # creat similar name list
-tile.list <- c("unadjusted","range","power","pareto","tiger",#"qcrlsc",
-               "serrf", "qcrfsc",
-                 "combat", "eigen","wave")
+tile.list <- c("unadjusted","range","power","pareto","tiger","qcrlsc",
+                      "serrf", "qcrfsc","combat", "eigen","wave")
+
+# Function to check if a value is NULL or text-only
+is_valid <- function(x) {
+  !is.null(x) && !is.character(x)}
+
+indices <- which(sapply(all.results, is_valid))
+
+# Filter the list to omit NULL or text-only variables
+all.results <- Filter(function(x) is_valid(x), all.results)
+tile.list <- tile.list[indices]
 
 # INSPECT RESULTS 
 #################
@@ -363,25 +384,46 @@ for (i in 1: length(all.results))
     if (tile.list[i]=="tiger"|tile.list[i]=="serrf")
         { # removw SA23 from the QC name
         names(all.data) <- sub("_SA23", "", names(all.data))
-        }else{}
+      }else{}
     
-	write.table(all.data, file=paste(outpath, "/Norm_data_",tile.list[i],".txt", sep=""),
-            append = FALSE, quote = FALSE, sep = "\t",
+  names(all.data)[1] <-"group"
+      
+	write.table(all.data, file=paste(outpath, "/featureGroups_normby_",tile.list[i],".csv", sep=""),
+            append = FALSE, quote = TRUE, sep = ",",
             row.names = FALSE,col.names = TRUE )
-
+	
+	# create average data by group without blank and QC
+	sa.group <- unique(sample.list$group[sample.list$sampletype=="SA"])
+	 
+	av.data <- all.data[,1]
+	for (j in 1:length(sa.group))
+	    {
+	      pos <- match(sample.list$filename[sample.list$group==sa.group[j]], names(all.data))
+	      av.data <-cbind(av.data, apply(all.data[,pos],1,mean,na.rm=TRUE))
+	    }
+	
+	colnames(av.data) <- c("group",sa.group)
+	
+	write.table(av.data, file=paste(outpath, "/featureGroups_normby_",tile.list[i],"_averaged.csv", sep=""),
+	              append = FALSE, quote = TRUE, sep = ",",
+	              row.names = FALSE,col.names = TRUE )
 
     SA.data <- all.data[,2:(ncol(df.SA)+1)] 
     QC.data <- all.data[,(ncol(df.SA)+2):ncol(all.data)] 
   
     if ( any(is.na(SA.data)>0) ) {
-      cat(">> NA are present in SA --> convert to between threshold", "\n")
+      #cat(">> NA are present in SA --> convert to between threshold", "\n")
+      cat( ">> NA are present in SA --> convert to between threshold", 
+            file= f.info, append=TRUE, sep="\n")
 
 	SA.data[is.na(SA.data)] <- sample(seq.num, length(SA.data[is.na(SA.data)]), replace = TRUE)
       
     }else{}
     
     if ( any(is.na(QC.data)>0) ) {
-      cat(">> NA are present in QC -> convert to between threshold", "\n")
+      #cat(">> NA are present in QC -> convert to between threshold", "\n")
+      cat( ">> NA are present in QC -> convert to between threshold",
+           file= f.info, append=TRUE, sep="\n")
       
       QC.data[is.na(QC.data)] <- sample(seq.num, length(QC.data[is.na(QC.data)]), replace = TRUE)
       
@@ -422,7 +464,8 @@ for (i in 1: length(all.results))
   all.RSD <- cbind(all.RSD,RSD)
   
   ## C) euclidienne distance
-  dist.QC <- stats::dist(as.matrix(QC.data), method = "euclidean",diag = FALSE)
+  # dist.QC <- stats::dist(as.matrix(QC.data), method = "euclidean",diag = FALSE)
+  dist.QC <- vegdist(as.matrix(QC.data), method = "bray")
   dist.QC[lower.tri(dist.QC)] <- NA
   dist.QC[lower.tri(dist.QC, diag = TRUE)] <- NA
   all.dist <- cbind(all.dist, na.omit(reshape2::melt(dist.QC))$value)
@@ -517,7 +560,7 @@ png(filename =paste(outpath, "/pearson corr.png", sep=""),
 dev.off()
 
 ################################################################
-png(filename =paste(outpath, "/euclidien distance.png", sep=""),
+png(filename =paste(outpath, "/bray-curtis distance.png", sep=""),
     width = 480, height = 480, units = "px")
 
     boxplot(all.dist,
