@@ -1,7 +1,7 @@
 ###############################################################################
 ## Title: PatRoon - suspect screening 
 ###############################################################################
-## version:5.0
+## version:5.1
 ## Date: August 2024
 ## Author: Boris Droz 
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
@@ -46,36 +46,30 @@ form.ele <- "CHNOPSFCl" # which element is considered in formula search
                         # "CHNOPSCl" +BrF are common considered elements for pollutant
 
 ################################################################################
-## load library
+## load library -- DO NOT MODIFIED
 library(patRoon) # v2.3.0
 # patRoon::verifyDependencies() ## Verifying the installation of dependency 
 # library(xcms) 
 library(BiocParallel) # to parralel calculation
 library(dplyr)
 library(webchem)
-
-## Parameter folder link
+###############################################################################
+## Parameter Path
 ## generally set once and do not need to be change
 # PatRoon.directory -> where suspect, MS2, ... are
 PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
-## load suspect list 
+## set suspect list, MS2 and Metfrag 
 fns <- paste(PatRoon.dir,"/suspect_list/neg_nist_mds2-2387.csv",sep="")
-## set path to 
+MS2.lib <- c("MassBank_NIST.msp","MassBank_RIKEN.msp","DIMSpecForPFAS_2023-10-03.msp") ## located in PatRoon.dir,"/MS2_library/
+fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="")
+
+## set path to -- DO NOT MODIFIED
 options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe
 options(patRoon.path.MetFragCL = 
           paste(PatRoon.dir,"/MetFrag/MetFragCommandLine-2.5.0.jar", sep="")) # metfrag exe
-options(patRoon.path.MetFragPubChemLite = 
-          paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="") )
+options(patRoon.path.MetFragPubChemLite = fn.metfrag )
           
-# # select and load MS2 library
-mslibraryNIST <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/MassBank_NIST.msp", sep=""), "msp")
-mslibraryRIKEN <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/MassBank_RIKEN.msp", sep=""), "msp") 
-# # 
-mslibraryM <- merge(mslibraryNIST, mslibraryRIKEN) # merge library
-
-mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/DIMSpecForPFAS_2023-10-03.msp", sep=""), "msp")
-
 ###############################################################################
 ###############################################################################
 
@@ -123,9 +117,34 @@ inpath <- paste(workPath,"input",sep="")
 setwd(workPath) # set directory
 
 # save parameter of the script
+f.info <- paste(outpath,"/AA_INFO_RUN_README.txt",sep="")
+cat( paste("*** patRoon parameter for the run....", Sys.Date()), file= f.info, append=TRUE, sep="\n")
+cat( "#########################################################", file= f.info, append=TRUE,sep="\n")
+cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), file= f.info, append=TRUE,sep="\n")
+cat( paste("XCMS_ppm:", opt.ppm), file= f.info, append=TRUE,sep="\n")
+cat( paste("XCMS_peakwidth:", opt.pw), file= f.info, append=TRUE,sep="\n")
+cat( paste("absMinIntensity:", min.intensity.th), file= f.info, append=TRUE,sep="\n")
+cat( paste("relMinReplicateAbundance :", rp.feature), file= f.info, append=TRUE,sep="\n")
+cat( paste("blankThreshold:", bk.sa.thr), file= f.info, append=TRUE,sep="\n")
+cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
+cat( paste("formula:", form.ele), file= f.info, append=TRUE,sep="\n")
+cat( paste("suspect list:", fns), file= f.info, append=TRUE,sep="\n")
+cat( paste("MS2 library:", MS2.lib), file= f.info, append=TRUE,sep="\n")
+cat( paste("MetFrag list:", fn.metfrag), file= f.info, append=TRUE,sep="\n")
+cat( "      ", file= f.info, sep="\n")
 
+## load MS2 library
+for (k in 1:length(MS2.lib))
+{
+  if (k==1) {
+    mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") 
+  }else{
+    mslibraryM <- append(mslibraryM, 
+                         list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
+  }
+}
 
-
+mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)
 
 ## load data info
 df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
@@ -135,7 +154,6 @@ anaInfo <- data.frame(cbind(path = df$path, #paste(df$path,"/",df$folder,sep="")
                                 analysis =df$filename,
                                 group = df$group,
                                 blank = df$blank) )
-
 # -------------------------
 # features
 # -------------------------
@@ -174,7 +192,6 @@ write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.csv", sep=""),
 fGroups <- patRoon::filter(fGroups,  
                             absMinIntensity = min.intensity.thr, 
                             relMinReplicateAbundance = rp.feature, 
-                            #maxReplicateIntRSD = 0.5,
                             blankThreshold = bk.sa.thr, removeBlanks = TRUE,
                             retentionRange = NULL, mzRange = NULL)
 
@@ -220,7 +237,6 @@ formulas <- generateFormulasGenForm(fGroups, mslists,
                                     calculateFeatures = TRUE,
                                     featThresholdAnn = 1,
                                     MSMode ="both")
-
 ## MetFrag -----
 ################
 # Calculate compound structure candidates
@@ -317,7 +333,7 @@ df.fGroupsSusp <- df.fGroupsSusp[order(df.fGroupsSusp$group, decreasing = TRUE),
 # Identify fully identical rows 
 fully_identical <- duplicated(df.fGroupsSusp$group) & duplicated(df.fGroupsSusp$susp_estIDLevel)
 
-# Select the first occurrence of each group
+# Select the first "BEST" occurrence of each group
 max_conf <- !duplicated(df.fGroupsSusp$group)
 
 # Update the "Source" column for the row with the highest level of conf among fully identical rows
@@ -357,11 +373,9 @@ write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.csv", sep
             append = FALSE, quote = TRUE, sep = ",",
             row.names = FALSE,col.names = TRUE )
 
-
 # create a working table for sample only 
 df.fGroupsSusp <- data.frame(df.fGroupsSusp)
 names(df.fGroupsSusp) <- sub("^X", "", names(df.fGroupsSusp)) # rename if name start by X -- 
-
 data <- df.fGroupsSusp[ ,names(df.fGroupsSusp) %in% unique(df$group[df$sampletype=="SA"]) ]
 
 # select minimal info
@@ -379,5 +393,31 @@ index <- rowSums( df.data[,8:ncol(df.data)]) >0 #######CHECK the 8 here####
 df.data <- df.data[index,]
 
 write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.csv", sep=""),
+            append = FALSE, quote = TRUE, sep = ",",
+            row.names = FALSE,col.names = TRUE )
+
+# Reduce false negatif using RT = function(Kow)
+# set level of conf to check
+pos <- df.data$estIDLevel %in% c("1","2a","3a","3b","3c") & !is.na(df.data$LogP)
+
+dt.level <- df.data[pos,]
+
+# Fit linear regression
+model <- lm(dt.level$LogP ~ dt.level$ret)
+
+# Calculate residuals
+residuals <- resid(model)
+
+# Identify outliers
+mean_residual <- mean(residuals)
+std_residual <- sd(residuals)
+outlier_threshold <- mean_residual + 2 * std_residual
+outliers <- abs(residuals) > outlier_threshold
+
+# re-inject into whole data set
+dt.level$estIDLevel[outliers] <-"4a"
+df.data$estIDLevel[pos] <- df.data$estIDLevel
+
+write.table(df.data, file=paste(outpath, "/SuspectScreening_sample_RTKow_check.csv", sep=""),
             append = FALSE, quote = TRUE, sep = ",",
             row.names = FALSE,col.names = TRUE )
