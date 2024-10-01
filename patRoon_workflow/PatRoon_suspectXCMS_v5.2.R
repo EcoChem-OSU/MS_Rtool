@@ -123,7 +123,7 @@ cat( "#########################################################", file= f.info, 
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), file= f.info, append=TRUE,sep="\n")
 cat( paste("XCMS_ppm:", opt.ppm), file= f.info, append=TRUE,sep="\n")
 cat( paste("XCMS_peakwidth:", opt.pw), file= f.info, append=TRUE,sep="\n")
-cat( paste("absMinIntensity:", min.intensity.th), file= f.info, append=TRUE,sep="\n")
+cat( paste("absMinIntensity:", min.intensity.thr), file= f.info, append=TRUE,sep="\n")
 cat( paste("relMinReplicateAbundance :", rp.feature), file= f.info, append=TRUE,sep="\n")
 cat( paste("blankThreshold:", bk.sa.thr), file= f.info, append=TRUE,sep="\n")
 cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
@@ -234,7 +234,7 @@ formulas <- generateFormulasGenForm(fGroups, mslists,
                                     relMzDev = 5,
                                     absAlignMzDev = 0.002,
                                     topMost = 10,
-                                    calculateFeatures = TRUE,
+                                    calculateFeatures = FALSE, # save time for high number of sample
                                     featThresholdAnn = 1,
                                     MSMode ="both")
 ## MetFrag -----
@@ -248,7 +248,7 @@ compsMF <- generateCompounds(
               dbRelMzDev = 5 ,
               fragRelMzDev = 5,
               fragAbsMzDev = 0.002,
-              database = "pubchemlite",
+              database = "csv",# set for custom database
               setThresholdAnn = 1,
               scoreTypes = c("individualMoNAScore", "fragScore", "score"),
               scoreWeights = 1,
