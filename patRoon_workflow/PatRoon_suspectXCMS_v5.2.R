@@ -1,8 +1,8 @@
 ###############################################################################
 ## Title: PatRoon - suspect screening 
 ###############################################################################
-## version:5.1
-## Date: August 2024
+## version:5.2
+## Date: September 2024
 ## Author: Boris Droz 
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
 ## Depends:
@@ -19,9 +19,9 @@
 ## REQUIERE:
 ## YOU WILL NEED to update the suspect list, MetfragPuchem DB and MS2 library 
 ## before starting
-## just make sure to used the right R version and the R assoiated R-library
+## just make sure to used the right R version and the R associated R-library
 ## 
-###############################################################################
+################################################################################
 ## Parameter -- MODIFIED IF NEEDED
 ############
 ## path
@@ -38,19 +38,17 @@ opt.pw = c(3, 143) # peak width min and max
 ## Parameter for filtering check patroon  help(filter)
 min.intensity.thr = 200## absMinIntensity, typical range between 100 - 1000
 rp.feature = 1 #relMinReplicateAbundance 
-bk.sa.thr = 3 # blankThreshold 
+bk.sa.thr = 3 # blankThreshold - never go under 3
 
 ## Adduct and formula search parameter
 adduct <- "[M+H]+"
-form.ele <- "CHNOPSFCl" # which element is considered in formula search
-                        # "CHNOPSCl" +BrF are common considered elements for pollutant
-
+form.ele <- "CHNOPSFCl" #  CHNOPSCl" +BrF are common considered elements for pollutant
+                      
 ################################################################################
 ## load library -- DO NOT MODIFIED
 library(patRoon) # v2.3.0
-# patRoon::verifyDependencies() ## Verifying the installation of dependency 
-# library(xcms) 
-library(BiocParallel) # to parralel calculation
+library(xcms) 
+library(BiocParallel) 
 library(dplyr)
 library(webchem)
 ###############################################################################
@@ -59,12 +57,12 @@ library(webchem)
 # PatRoon.directory -> where suspect, MS2, ... are
 PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
-## set suspect list, MS2 and Metfrag 
+## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_nist_mds2-2387.csv",sep="")
-MS2.lib <- c("MassBank_NIST.msp","MassBank_RIKEN.msp","DIMSpecForPFAS_2023-10-03.msp") ## located in PatRoon.dir,"/MS2_library/
+MS2.lib <- c("MassBank_NIST.msp","MassBank_RIKEN.msp","DIMSpecForPFAS_2023-10-03.msp") 
 fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="")
 
-## set path to -- DO NOT MODIFIED
+## set path to -- GENERALLY DO NOT NEED TO MODIFY
 options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe
 options(patRoon.path.MetFragCL = 
           paste(PatRoon.dir,"/MetFrag/MetFragCommandLine-2.5.0.jar", sep="")) # metfrag exe
@@ -76,9 +74,9 @@ options(patRoon.path.MetFragPubChemLite = fn.metfrag )
 ## DO NOT MODIFIED BELOW JUST RUN THE CODE ####
 
 ##   ----  SCRIPT START HERE ----
-###############################################################################
+################################################################################
 
-# #################################################################################################################################################
+# ##############################################################################
 # FUNCTION check and produced subDir folder
 ###########################################
 #February 2017 -- mod on the 2022-08-18 
@@ -150,7 +148,7 @@ mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)
 df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
                 sep=",",header=TRUE)
 
-anaInfo <- data.frame(cbind(path = df$path, #paste(df$path,"/",df$folder,sep=""),
+anaInfo <- data.frame(cbind(path = df$path, 
                                 analysis =df$filename,
                                 group = df$group,
                                 blank = df$blank) )
@@ -158,12 +156,11 @@ anaInfo <- data.frame(cbind(path = df$path, #paste(df$path,"/",df$folder,sep="")
 # features
 # -------------------------
 # Find all features
-# NOTE: see the XCMS manual for many more options
 param.xcms <- xcms::CentWaveParam(ppm = opt.ppm,
                               peakwidth = opt.pw,
                               snthresh = 10,
                               prefilter = c(3, 100),
-                              noise = 0 ) # noise could be sensitive do not change  
+                              noise = 0 )
 
 fListPos <- findFeatures(anaInfo, "xcms3", param = param.xcms)
 
@@ -234,13 +231,12 @@ formulas <- generateFormulasGenForm(fGroups, mslists,
                                     relMzDev = 5,
                                     absAlignMzDev = 0.002,
                                     topMost = 10,
-                                    calculateFeatures = FALSE, # save time for high number of sample
+                                    calculateFeatures = FALSE,
                                     featThresholdAnn = 1,
                                     MSMode ="both")
 ## MetFrag -----
 ################
 # Calculate compound structure candidates
-# scoreTypes to be defined, e.g.: "fragScore","metFusionScore","...
 compsMF <- generateCompounds(
                     fGroups, mslists,
               "metfrag",
@@ -274,9 +270,8 @@ suspects <- data.frame(name = dat$ID,
                          stringsAsFactors = FALSE) 
   
 fGroupsSusp <- screenSuspects(fGroups, suspects, 
-                              # rtWindow = 60, #in sec
                               mzWindow = 0.005,
-                              onlyHits = TRUE) # remove any non-hits immediately
+                              onlyHits = TRUE) 
 # -------------------------
 # Final Annotation 
 # -------------------------
@@ -302,10 +297,10 @@ fGroupsSusp_Lib <- annotateSuspects(
                     formulasNormalizeScores = "max",
                     compoundsNormalizeScores = "max") #
 
-# final filtration
+# Take the highest Level conf. between MF and Lib
 fGroupsSusp_MF <- patRoon::filter(fGroupsSusp_MF,
-                        selectHitsBy="level", # take the highest Level conf. if same suspect match to multiple feature groups
-                        selectBestFGroups=TRUE) # keep only best identification score
+                        selectHitsBy="level", 
+                        selectBestFGroups=TRUE) 
 
 fGroupsSusp_Lib <- patRoon::filter(fGroupsSusp_Lib,
                                   selectHitsBy="level", 
@@ -388,7 +383,7 @@ df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
                  XLogP=df.fGroupsSusp$LogP)), data)
 
 # final check if all value = zero 
-index <- rowSums( df.data[,8:ncol(df.data)]) >0 #######CHECK the 8 here####
+index <- rowSums( df.data[,8:ncol(df.data)]) >0 
 
 df.data <- df.data[index,]
 
