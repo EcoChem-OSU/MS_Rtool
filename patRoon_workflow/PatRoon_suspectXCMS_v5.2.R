@@ -59,7 +59,7 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_nist_mds2-2387.csv",sep="")
-MS2.lib <- c("MassBank_NIST.msp","MassBank_RIKEN.msp","DIMSpecForPFAS_2023-10-03.msp") 
+MS2.lib <- c("MassBank_NIST.msp") 
 fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
@@ -129,7 +129,6 @@ cat( paste("formula:", form.ele), file= f.info, append=TRUE,sep="\n")
 cat( paste("suspect list:", fns), file= f.info, append=TRUE,sep="\n")
 cat( paste("MS2 library:", MS2.lib), file= f.info, append=TRUE,sep="\n")
 cat( paste("MetFrag list:", fn.metfrag), file= f.info, append=TRUE,sep="\n")
-cat( "      ", file= f.info, sep="\n")
 
 ## load MS2 library
 for (k in 1:length(MS2.lib))
@@ -142,7 +141,7 @@ for (k in 1:length(MS2.lib))
   }
 }
 
-mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)
+if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)} else {}
 
 ## load data info
 df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
@@ -176,8 +175,7 @@ write.table(df.fList, file=paste(outpath,"/raw_unaligned_ungrouped.csv", sep="")
 # performed RT alignement and group feature
 fGroups <- groupFeatures(fList, "xcms3")
                          
-# save raw  data for control
-## export data
+# export raw data for control
 df.fGroups <- as.data.table(fGroups)
 df.fGroups <- na.omit(df.fGroups)
 
