@@ -373,12 +373,12 @@ data <- df.fGroupsSusp[ ,names(df.fGroupsSusp) %in% unique(df$group[df$sampletyp
 
 # select minimal info
 df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
-                  ret=df.fGroupsSusp$ret,
-                 mz=df.fGroupsSusp$mz,
-                 InChIKey=df.fGroupsSusp$susp_InChIKey,
-                 estIDLevel=df.fGroupsSusp$susp_estIDLevel,
-                 IUPACName=df.fGroupsSusp$IUPACName,
-                 XLogP=df.fGroupsSusp$LogP)), data)
+                  ret= as.numeric(df.fGroupsSusp$ret),
+                  mz= as.numeric(df.fGroupsSusp$mz),
+                  InChIKey=df.fGroupsSusp$susp_InChIKey,
+                  estIDLevel=df.fGroupsSusp$susp_estIDLevel,
+                  IUPACName=df.fGroupsSusp$IUPACName,
+                  LogP= as.numeric(df.fGroupsSusp$LogP) )), data)
 
 # final check if all value = zero 
 index <- rowSums( df.data[,8:ncol(df.data)]) >0 
