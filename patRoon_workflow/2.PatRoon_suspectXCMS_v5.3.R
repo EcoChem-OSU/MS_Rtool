@@ -31,6 +31,10 @@ workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/WWT_testcode"
 ## Input data - 
 sample.list <- "sample_list_testOMS.csv"
 
+# check for ISTD
+check.istd <- "YES"
+istd.list <- 
+
 ## Optimized XCMS parameters for peak picking
 opt.ppm = 25
 opt.pw = c(3, 143) # peak width min and max
@@ -116,13 +120,22 @@ setwd(workPath) # set directory
 
 # save parameter of the script
 f.info <- paste(outpath,"/AA_INFO_RUN_README.txt",sep="")
-cat( paste("*** patRoon parameter for the run....", Sys.Date()), file= f.info, append=TRUE, sep="\n")
-cat( "#########################################################", file= f.info, append=TRUE,sep="\n")
-cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), file= f.info, append=TRUE,sep="\n")
+cat( paste("*** patRoon parameter for the run....", Sys.Date()), 
+     file= f.info, append=TRUE, sep="\n")
+cat( "#########################################################", 
+     file= f.info, append=TRUE,sep="\n")
+cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), 
+     file= f.info, append=TRUE,sep="\n")
+if (check.istd =="YES"){
+  cat( paste("ISTDList: ", workPath,"/input/",istd.list,sep=""), 
+       file= f.info, append=TRUE,sep="\n")
+}else{}
 cat( paste("XCMS_ppm:", opt.ppm), file= f.info, append=TRUE,sep="\n")
 cat( paste("XCMS_peakwidth:", opt.pw), file= f.info, append=TRUE,sep="\n")
-cat( paste("absMinIntensity:", min.intensity.thr), file= f.info, append=TRUE,sep="\n")
-cat( paste("relMinReplicateAbundance :", rp.feature), file= f.info, append=TRUE,sep="\n")
+cat( paste("absMinIntensity:", min.intensity.thr), 
+     file= f.info, append=TRUE,sep="\n")
+cat( paste("relMinReplicateAbundance :", rp.feature), 
+     file= f.info, append=TRUE,sep="\n")
 cat( paste("blankThreshold:", bk.sa.thr), file= f.info, append=TRUE,sep="\n")
 cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
 cat( paste("formula:", form.ele), file= f.info, append=TRUE,sep="\n")
@@ -172,6 +185,31 @@ write.table(df.fList, file=paste(outpath,"/raw_unaligned_ungrouped.csv", sep="")
             append = FALSE, quote = TRUE, sep = ",",
             row.names = FALSE,col.names = TRUE )
 
+## check ISTD on unaligned
+if (check.istd=="YES") {
+  
+df.istd <- read.csv(paste(workPath,"/input/",istd.list,sep=""),
+                    sep=",",header=TRUE) #open istd list
+
+istd <- data.frame(name = df.istd$name,
+                   formula = df.istd$formula,
+                   rt = df.isstd$rt,
+                   stringsAsFactors = FALSE) 
+
+fGroupsISTD <- screenSuspects(fList, istd, 
+                              rtWindow = 60,
+                              mzWindow = 0.005,
+                              onlyHits = TRUE)
+
+# ## export ISTD intensity data
+df.fGroupsISTD <- as.data.table(fGroupsISTD)
+df.fGroupsISTD <- na.omit(df.fGroupsISTD)
+
+write.table(df.fGroups, file=paste(outpath,"/ISTD_check.csv", sep=""),
+            append = FALSE, quote = TRUE, sep = ",",
+            row.names = FALSE,col.names = TRUE )
+}else{}
+
 # performed RT alignement and group feature
 fGroups <- groupFeatures(fList, "xcms3")
                          
@@ -182,6 +220,7 @@ df.fGroups <- na.omit(df.fGroups)
 write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.csv", sep=""),
             append = FALSE, quote = TRUE, sep = ",",
             row.names = FALSE,col.names = TRUE )
+
 
 # Basic rule based filtering
 fGroups <- patRoon::filter(fGroups,  
