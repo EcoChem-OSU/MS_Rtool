@@ -63,7 +63,8 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_nist_mds2-2387.csv",sep="")
-MS2.lib <- c("MassBank_NIST.msp", "DIMSpecForPFAS_2023-10-03.msp","MassBank_RIKEN.msp", "MSMS-Public_all-pos-VS19.msp") 
+MS2.lib <- c("MassBank_NIST.msp", "DIMSpecForPFAS_2023-10-03.msp","MassBank_RIKEN.msp", 
+             "MSMS-Public_all-pos-VS19.msp") 
 fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
@@ -281,7 +282,7 @@ compsMF <- generateCompounds(
               dbRelMzDev = 5 ,
               fragRelMzDev = 5,
               fragAbsMzDev = 0.002,
-              database = "csv",# set for custom database
+              database = "pubchemlite",
               setThresholdAnn = 1,
               scoreTypes = c("individualMoNAScore", "fragScore", "score"),
               scoreWeights = 1,

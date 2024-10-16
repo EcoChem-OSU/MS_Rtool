@@ -1,0 +1,11 @@
+command: C:/R/Library/patRoonExt/ext/openbabel/obabel.exe
+args: -oinchikey -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpcxDJ0j\obabel_in990c8253af -O C:\Users\drozditb\AppData\Local\Temp\RtmpcxDJ0j\obabel_out990784f4668
+
+---
+
+output:
+
+
+standard error output:
+62562 molecules converted
+
