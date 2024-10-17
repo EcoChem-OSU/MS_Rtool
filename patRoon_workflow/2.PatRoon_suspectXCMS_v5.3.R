@@ -1,7 +1,7 @@
 ###############################################################################
 ## Title: PatRoon - suspect screening 
 ###############################################################################
-## version:5.2
+## version:5.3
 ## Date: September 2024
 ## Author: Boris Droz 
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
@@ -429,28 +429,3 @@ write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.csv", sep="")
             append = FALSE, quote = TRUE, sep = ",",
             row.names = FALSE,col.names = TRUE )
 
-# Reduce false negatif using RT = function(Kow)
-# set level of conf to check
-pos <- df.data$estIDLevel %in% c("1","2a","3a","3b","3c") & !is.na(df.data$LogP)
-
-dt.level <- df.data[pos,]
-
-# Fit linear regression
-model <- lm(dt.level$LogP ~ dt.level$ret)
-
-# Calculate residuals
-residuals <- resid(model)
-
-# Identify outliers
-mean_residual <- mean(residuals)
-std_residual <- sd(residuals)
-outlier_threshold <- mean_residual + 2 * std_residual
-outliers <- abs(residuals) > outlier_threshold
-
-# re-inject into whole data set
-dt.level$estIDLevel[outliers] <-"4a"
-df.data$estIDLevel[pos] <- df.data$estIDLevel
-
-write.table(df.data, file=paste(outpath, "/SuspectScreening_sample_RTKow_check.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
-            row.names = FALSE,col.names = TRUE )
