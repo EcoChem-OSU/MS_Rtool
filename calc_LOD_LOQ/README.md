@@ -37,4 +37,4 @@ Citing
 -------
 Vial, J.; Jardy, A. Experimental Comparison of the Different Approaches 
 To Estimate LOD and LOQ of an HPLC Method. 
-Anal. Chem. 1999, 71 (14), 2672-2677. DOI: 10.1021/ac981179n.
+Anal. Chem. 1999, 71 (14), 2672-2677. DOI:[10.1021/ac981179n](https://pubs.acs.org/doi/10.1021/ac981179n).
