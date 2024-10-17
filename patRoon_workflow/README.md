@@ -3,7 +3,6 @@ patRoon workflow:
 Description
 -----------
 Suspect analysis workflow using XCMS for peak picking and performing annotation using divers tools (formula, MS2 library matching, Metfrag).  
-Retention time Suspect false positive annotation are check using a retention time relationship with the logKow. 
 
 Getting started
 ----------------
@@ -43,7 +42,6 @@ Output files included divers dataframes tables and text information
 ```featureGroups_averaged.csv```: peak picked features averaged through the replicate  
 ```SuspectScreening_all.csv```: results of the suspect screening (full results)  
 ```SuspectScreening_sample.csv```: results of the suspect screening for sample only including relevant information only.
-```SuspectScreening_sample_RTKow_check.csv```: re-assignement of _sample table to level of confidence <=3c to 4 if not consistent with logKow = function(RT)
 
 Citing
 -------
