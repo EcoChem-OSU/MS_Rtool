@@ -44,6 +44,7 @@ max_peakwidth.range = c(80, 140)
 library(patRoon)
 
 setwd(workPath)
+datum <- Sys.Date()
 
 ## load data info
 df <- read.table(paste("/input/",sample.list,sep=""), sep=",",header=TRUE)
@@ -74,8 +75,8 @@ capt.out <- capture.output(show(ftOpt)) # capture optimized parameter
 
 ## save optimized parameter
 outpath <- paste(workPath,"/output",sep="")
-f.info <- paste(outpath,"/",Sys.Date(),"_XCMS_optPara.txt",sep="")
-cat( paste("*** XCMS optimization parameter....", Sys.Date()), file= f.info, append=TRUE, sep="\n")
+f.info <- paste(outpath,"/",datum,"_XCMS_optPara.txt",sep="")
+cat( paste("*** XCMS optimization parameter....", datum), file= f.info, append=TRUE, sep="\n")
 cat( "#########################################################", file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), file= f.info, append=TRUE,sep="\n")
 cat( paste("Ratio of samples: ", ratio, sep=""), file= f.info, append=TRUE,sep="\n")
