@@ -1,0 +1,19 @@
+*** XCMS optimization parameter.... 2024-11-01
+#########################################################
+SampleList: C:/Users/Peter/Documents/OSU/Fields Rotation/GitHub Projects/Example Input/KMD_7600_20240221_Spike_cal//input/sample_list_KMD.csv
+Ratio of samples: 1
+Number of samples: 1
+An optimization result object ('optimizationResult')
+Algorithm: xcms3
+Parameter set 1/1 (BEST):
+    Experimental designs tested: 2
+    Starting params:
+    - method: centWave
+    - ppm: c(8, 17)
+    - min_peakwidth: c(6, 15)
+    - max_peakwidth: c(80, 140)
+    Optimized params:
+    - param: new("CentWaveParam", ppm = 17, peakwidth = c(15, 140), snthresh = 10, prefilter = c(3, 100), mzCenterFun = "wMean", integrate = 1, mzdiff = -0.001, fitgauss = FALSE, noise = 0, verboseColumns = FALSE, roiList = list(), firstBaselineCheck = TRUE, roiScales = numeric(0), extendLengthMSW = FALSE, verboseBetaColumns = FALSE)
+    Best results: featureCount: 10101; nonRP: 5118; RP: 3548; PPS: 2459.61391168425
+Best parameter set: 1
+Object size (indication): 18.5 MB

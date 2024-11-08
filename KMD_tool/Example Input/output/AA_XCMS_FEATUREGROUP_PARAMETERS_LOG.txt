@@ -1,0 +1,30 @@
+*** patRoon parameter for the run.... 2024-11-01
+#########################################################
+SampleList: C:/Users/Peter/Documents/OSU/Fields Rotation/GitHub Projects/Example Input/KMD_7600_20240221_Spike_cal/input/sample_list_KMD.csv
+XCMS_ppm: 16.1
+XCMS_peakwidth: 15
+XCMS_peakwidth: 149
+absMinIntensity: 200
+relMinReplicateAbundance : 1
+blankThreshold: 3
+adduct: [M-H]-
+*** patRoon parameter for the run.... 2024-11-01
+#########################################################
+SampleList: C:/Users/Peter/Documents/OSU/Fields Rotation/GitHub Projects/Example Input/KMD_7600_20240221_Spike_cal/input/sample_list_KMD.csv
+XCMS_ppm: 17
+XCMS_peakwidth: 15
+XCMS_peakwidth: 140
+absMinIntensity: 200
+relMinReplicateAbundance : 1
+blankThreshold: 3
+adduct: [M-H]-
+*** patRoon parameter for the run.... 2024-11-01
+#########################################################
+SampleList: C:/Users/Peter/Documents/OSU/Fields Rotation/GitHub Projects/Example Input/KMD_7600_20240221_Spike_cal/input/sample_list_KMD.csv
+XCMS_ppm: 17
+XCMS_peakwidth: 15
+XCMS_peakwidth: 140
+absMinIntensity: 200
+relMinReplicateAbundance : 1
+blankThreshold: 3
+adduct: [M-H]-

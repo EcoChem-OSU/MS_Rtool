@@ -1,0 +1,21 @@
+*** Kendrick Mass defect model  --- 2024-11-01
+######################################################
+R-script KMD_analysis_v3.1 - Droz 2024
+######################################################
+Mass defect filtering from -0.49 to 0.5
+Sample list analyzed
+--------------------
+EC_022024
+##############
+KMD PARAMETER
+##############
+KMD on base unit: CF2
+Homologue serie (HS) tolerance (Da): 0.004
+Intensity count threshold: 1000
+Error window in mz (ppm) associate to the unit: 8
+Number minimal to consider one HS: 3
+#####################
+Suspect List Matching
+#####################
+Suspect list used: KMD_CF2_neg_SuspectList_2024-07-19.csv
+mz tolerance (ppm): 8
