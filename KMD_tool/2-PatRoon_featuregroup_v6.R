@@ -98,7 +98,6 @@ anaInfo <- data.frame(cbind(path = df$path,
 print(anaInfo)
 
 
-
 # save parameter of the script
 f.info <- paste(outpath,"/AA_XCMS_FEATUREGROUP_PARAMETERS_LOG.txt",sep="")
 cat( paste("*** patRoon parameter for the run....", Sys.Date()), 
@@ -115,8 +114,6 @@ cat( paste("relMinReplicateAbundance :", rp.feature),
      file= f.info, append=TRUE,sep="\n")
 cat( paste("blankThreshold:", bk.sa.thr), file= f.info, append=TRUE,sep="\n")
 cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
-
-
 
 # -------------------------
 # features
@@ -144,7 +141,7 @@ fGroups <- groupFeatures(fList, "xcms3")
 fGroups <- patRoon::filter(fGroups,  
                             absMinIntensity = min.intensity.thr, 
                             relMinReplicateAbundance = rp.feature, 
-                            maxReplicateIntRSD = 0.75,
+                            #maxReplicateIntRSD = 0.75,
                             blankThreshold = bk.sa.thr, removeBlanks = TRUE,
                             retentionRange = NULL, mzRange = NULL)
 
