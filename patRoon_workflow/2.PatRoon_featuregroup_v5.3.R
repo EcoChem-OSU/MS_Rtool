@@ -142,7 +142,7 @@ fGroups <- patRoon::filter(fGroups,
 # reporting
 # -------------------------
 ## export averaged groupfeature as table
-df.fGroups <- as.data.table(fGroups, average = TRUE)
+df.fGroups <- patRoon::as.data.table(fGroups, average = TRUE)
                 
 write.table(df.fGroups, file=paste(outpath,"/featureGroupsXCMS.csv", sep=""),
             append = FALSE, quote = TRUE, sep = ",",
