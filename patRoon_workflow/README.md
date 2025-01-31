@@ -28,8 +28,8 @@ Input
 ------
 - sample list --> check documentation in [patRoon Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
 - ISTD list: list of internal standarad treated as a suspect list --> check documentation in [patRoon Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)  
-[!WARNING]    
-  Use this option with caution always better to check QA/QC BEFORE running the script.
+>[!WARNING]
+>Use ISTD list option with caution always better to check QA/QC BEFORE running the script.
 - XCMS parameter --> defined by the optimization script 
 - Filtering setting: ```absMinIntensity```, ```relMinReplicateAbundance``` and ```blankThreshold``` check documentation in [patRoon Handbook filtering](https://rickhelmus.github.io/patRoon/handbook_bd/filtering.html)   
 - Adduct and formula search parameter 
