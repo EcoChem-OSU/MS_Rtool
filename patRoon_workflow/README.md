@@ -9,7 +9,11 @@ Getting started
 [Tutorial on patRoon](https://rickhelmus.github.io/patRoon/articles/tutorial.html) and more advance information on  [patron Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
 
 1. XCMS need to be optimized using ```PatRoon_XCMS_feature_optiv.R```
-2. Suspect screening is performed using ```PatRoon_suspectXCMS.R```
+2. Suspect screening is performed using ```PatRoon_suspectXCMS.R```  
+   Two versions are available:  
+   ```DIA``` for data independent acquisition like Swath and   
+    ```DDA``` for data dependent acquisition.   
+    ```PatRoon_featuregroup.R``` code do only peack picking and filtering (quicker).  
 
 Installation
 -----------
@@ -22,7 +26,10 @@ To be sure you have all necessary package install
 
 Input
 ------
-- sample list --> check documentation in [patRoon Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)  
+- sample list --> check documentation in [patRoon Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
+- ISTD list: list of internal standarad treated as a suspect list --> check documentation in [patRoon Handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)  
+[!WARNING]    
+  Use this option with caution always better to check QA/QC BEFORE running the script.
 - XCMS parameter --> defined by the optimization script 
 - Filtering setting: ```absMinIntensity```, ```relMinReplicateAbundance``` and ```blankThreshold``` check documentation in [patRoon Handbook filtering](https://rickhelmus.github.io/patRoon/handbook_bd/filtering.html)   
 - Adduct and formula search parameter 
@@ -42,6 +49,7 @@ Output files included divers dataframes tables and text information
 ```featureGroups_averaged.csv```: peak picked features averaged through the replicate  
 ```SuspectScreening_all.csv```: results of the suspect screening (full results)  
 ```SuspectScreening_sample.csv```: results of the suspect screening for sample only including relevant information only.
+```ISTD_check.csv```: In case you select ```check.istd <- "YES"``` result a table with istd values treatedas suspect. 
 
 Citing
 -------
