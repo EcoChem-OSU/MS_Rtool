@@ -49,7 +49,7 @@ Output files included divers dataframes tables and text information
 ```featureGroups_averaged.csv```: peak picked features averaged through the replicate  
 ```SuspectScreening_all.csv```: results of the suspect screening (full results)  
 ```SuspectScreening_sample.csv```: results of the suspect screening for sample only including relevant information only.
-```ISTD_check.csv```: In case you select ```check.istd <- "YES"``` result a table with istd values treatedas suspect. 
+```ISTD_check.csv```: In case you select ```check.istd <- "YES"``` result a table with istd values treated as suspect. 
 
 Citing
 -------
