@@ -22,7 +22,7 @@ creat.subDir <- function (mainDir,subDir)
 }
 
 ################################################################################
-#                                   KMD FUNCTION                                  #
+#                                   Round FUNCTION                                  #
 ################################################################################
 round2 <- function(x, n) { # check out https://janajarecki.com/blog/r-does-not-round-2-5-to-3/
   x <- as.numeric(x)
@@ -33,6 +33,10 @@ round2 <- function(x, n) { # check out https://janajarecki.com/blog/r-does-not-r
   z = z/10^n
   z * posneg
 }
+
+################################################################################
+#                                   KMD FUNCTION                                  #
+################################################################################
 KMD_FUN <-function(mz,ret,int,
                    form_unit= "CF2",
                    hs_tol = 0.005, 
@@ -81,6 +85,9 @@ KMD_FUN <-function(mz,ret,int,
   return (df.kmd)
 }  
 
+################################################################################
+#                                   KMD Filtering                                  #
+################################################################################
 KMD_filter <-function(df.kmd, 
                       form_unit= "CF2", 
                       thr_dmz = 10,
@@ -88,9 +95,8 @@ KMD_filter <-function(df.kmd,
 {
   # Calculate mass unit
   dmz <- calculateMass(form_unit)
-  #######################################
+  
   ## Filtering by mz and RT 
-  ######################################
   ## Iterate through each data point 
   # asum we keep the first point
   df.kmd -> df.kmd.start
