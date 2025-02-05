@@ -243,7 +243,6 @@ if (MD.filter=="YES") # Mass defect filtration
   {
   fGroups.test <- patRoon::filter(fGroups, mzDefectRange = MD.minmax)
   
-  
   round2 <- function(x, n) { # round to the nearest whole number
     x <- as.numeric(x)
     posneg = sign(x)
