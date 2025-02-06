@@ -84,8 +84,8 @@ creat.subDir <- function (mainDir,subDir)
 # date <- Sys.Date()
 # folder <- paste("/",date,"_NTA_patRoon", sep="")
 #outpath <- creat.subDir(paste(workPath,"/output",sep=""), folder)
-outpath <- paste(workPath,"output",sep="")
-inpath <- paste(workPath,"input",sep="")
+outpath <- paste(workPath,"/output",sep="")
+inpath <- paste(workPath,"/input",sep="")
 
 setwd(workPath) # set directory
 
@@ -144,6 +144,8 @@ fGroups <- patRoon::filter(fGroups,
 ## export averaged groupfeature as table
 df.fGroups <- patRoon::as.data.table(fGroups, average = TRUE)
                 
-write.table(df.fGroups, file=paste(outpath,"/featureGroupsXCMS.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
+
+

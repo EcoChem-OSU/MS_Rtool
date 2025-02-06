@@ -182,8 +182,8 @@ fList <- makeSet(fListPos, adducts = adduct)
 df.fList <- as.data.table(fList)
 df.fList <- na.omit(df.fList)
 
-write.table(df.fList, file=paste(outpath,"/raw_unaligned_ungrouped.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fList, file=paste(outpath,"/raw_unaligned_ungrouped.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
 ## check ISTD on unaligned
@@ -206,8 +206,8 @@ fGroupsISTD <- screenSuspects(fList, istd,
 df.fGroupsISTD <- as.data.table(fGroupsISTD)
 df.fGroupsISTD <- na.omit(df.fGroupsISTD)
 
-write.table(df.fGroups, file=paste(outpath,"/ISTD_check.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fGroups, file=paste(outpath,"/ISTD_check.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 }else{}
 
@@ -218,8 +218,8 @@ fGroups <- groupFeatures(fList, "xcms3")
 df.fGroups <- as.data.table(fGroups)
 df.fGroups <- na.omit(df.fGroups)
 
-write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
 
@@ -236,15 +236,15 @@ fGroups <- patRoon::filter(fGroups,
 ## export groupfeature as table
 df.fGroups <- as.data.table(fGroups)
 
-write.table(df.fGroups, file=paste(outpath,"/featureGroups.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
 ## export averaged groupfeature as table
 df.fGroups <- as.data.table(fGroups, average = TRUE)
                 
-write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 # -------------------------
 # Annotation 
@@ -402,8 +402,8 @@ for (i in 1:nrow(df.fGroupsSusp) )
 
 df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol)
 
-write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
 # create a working table for sample only 
@@ -425,7 +425,7 @@ index <- rowSums( df.data[,8:ncol(df.data)]) >0
 
 df.data <- df.data[index,]
 
-write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.csv", sep=""),
-            append = FALSE, quote = TRUE, sep = ",",
+write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 

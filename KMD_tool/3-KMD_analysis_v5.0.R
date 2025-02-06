@@ -21,7 +21,7 @@ source(paste(workdir,"/func_KMDv3.1.R",sep=""))
 ## Input data
 # sample.list <- "sample_list_KMD.csv"
 sample.list <- "sample_list_KMD.csv"
-feat.files <- "featureGroupsXCMS_neg_example.txt"# is an input but is on an output folder
+feat.files <- "featureGroups.txt"# is an input but is on an output folder
 
 # suspect list to match features to
 fn.susp.list <- glue("{workdir}/input/KMD_CF2_neg_SuspectList_2024-07-19.csv")
@@ -355,8 +355,9 @@ if (nrow(matched_rows) < 2) {
 
 
 else {
-    write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_H_series.csv",sep=""),sep=",", 
-              append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
+    write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_H_series.txt",sep=""),sep=",", 
+                append = FALSE, quote = FALSE, sep = "\t",
+                row.names = FALSE, col.names = TRUE )
               
     print(glue("\n\nThe {p.samp[nd]} kmd dataframe has no homologous series detected in the sample.\nView the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_H_series.csv for more information."))
   }

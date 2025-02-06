@@ -1,5 +1,6 @@
 ###############################################################################
 ## Title: PatRoon - suspect screening 
+####    Deconvolution for SWATH aquisition  or other DIA mode ######
 ###############################################################################
 ## version:5.4
 ## Date: January 2025
@@ -45,7 +46,7 @@ rp.feature = 1 #relMinReplicateAbundance
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
 # Mass defect filtering - option are "YES" or "NO"
-MD.filter <- "YES" # used the suspect list to mass filtering.
+MD.filter <- "NO" # used the suspect list to mass filtering.
 #MD.minmax <-c(-0.49,0.50) # based on the merge suspect list (OCDE,NIST,NORMAN,2EPA)
 #MD.minmax <-c(-0.25,0.1) # from Zwiener paper based on OECD suspect list
 
@@ -69,7 +70,7 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_Targets_std_List_20240719_Peter_mod.csv",sep="")
 MS2.lib <- c("Fluoros_2.5_editedV4.msp") 
-fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="")
+fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20240726.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
 options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe
@@ -252,6 +253,21 @@ if (MD.filter=="YES") # Mass defect filtration
   }else{}
 
 # -------------------------
+# XCMS deconvolution test see
+## http://bioconductor.riken.jp/packages/3.10/bioc/vignettes/xcms/inst/doc/xcms-lcms-ms.html#3_swath_data_analysis
+# -------------------------
+if (adduct == "[M-H]-") { polarity="negative"}else{polarity="positive"}
+
+swath_data <- getXCMSnExp(fGroups, set=polarity, loadRawData=TRUE) 
+
+cwp <- CentWaveParam(snthresh = 3, noise = 10, ppm = 10,
+                     peakwidth = c(3, 30))
+swath_data <- findChromPeaksIsolationWindow(swath_data, param = cwp)
+
+# reconstruct swath spectra
+swath_spectra <- reconstructChromPeakSpectra(swath_data, expandRt = 0,
+                                             diffRt =2, minCor = 0.8) # reconstruct the data
+# -------------------------
 # reporting
 # -------------------------
 ## export groupfeature as table
@@ -278,8 +294,29 @@ mslists <- generateMSPeakLists(fGroups, "mzr",
                                avgFeatParams = avgPListParams, 
                                avgFGroupParams = avgPListParams)
 
+# this table allows us to quickly convert between featues from patRoon and XCMS
+flattenedFeatTab <- as.data.table(getFeatures(fGroups))
+flattenedFeatTab[, XCMSPeakID := rownames(xcms::chromPeaks(swath_data, msLevel=1))]
+
+swathSpecData <- Spectra::spectraData(swath_spectra)
+
+mslistsF <- delete(mslists, k = analyses(fGroups), reAverage = TRUE, j = function(pl, grp, ana, type)
+{
+  if (type != "MSMS")
+    return(FALSE) # don't delete any peaks in MS data
+  
+  XCMSPID <- flattenedFeatTab[group == grp & analysis == ana]$XCMSPeakID
+  XCMSPeaks <- Spectra::peaksData(swath_spectra)[[match(XCMSPID, row.names(swathSpecData))]][, "mz"]
+  pl <- data.table::copy(pl)
+  
+  # Now check for each mz in pl if it is within 5 mDa tolerance of the mass peaks found by XCMS
+  pl[, inXCMS := sapply(mz, function(x) any(abs(x - XCMSPeaks) <= 0.005))]
+  
+  return(pl$inXCMS == FALSE) # and remove all others
+})
+
 # Rule based filtering of MS peak lists.
-mslists <- patRoon::filter(mslists, 
+mslists <- patRoon::filter(mslistsF, 
                            withMSMS = TRUE, absMSIntThr = NULL, 
                             absMSMSIntThr = NULL, relMSIntThr = NULL, 
                             relMSMSIntThr = 0.05,
