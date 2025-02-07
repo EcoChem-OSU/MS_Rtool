@@ -29,7 +29,7 @@ setwd(workPath) # do not change it
 
 inpath <- paste(workPath ,"/output/",sep="")
 
-fn.df <- "/raw_aligned_grouped.csv" # feature list grouped
+fn.df <- "/raw_aligned_grouped.txt" # feature list grouped
 fn.sample.list <- "input/sample_list_UKL2023_outliersRemoved.csv" # sample list with all info see example
 
 thr_range <- c(100,500) # range to replace NA and zero should be same than 
@@ -91,7 +91,7 @@ cat( paste("SampleList:", fn.sample.list), file= f.info, append=TRUE,sep="\n")
 cat( "      ", file= f.info, sep="\n")
 
 ## load data
-df <- read.csv( paste(inpath,fn.df,sep=""), sep=",")
+df <- read.table(paste(inpath,fn.df,sep=""), sep="\t", header=TRUE)
 sample.list <- read.csv(fn.sample.list, sep=",")
 
 # get SA and QC only
