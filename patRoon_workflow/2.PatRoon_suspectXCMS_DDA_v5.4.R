@@ -441,9 +441,12 @@ df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
                   LogP= as.numeric(df.fGroupsSusp$LogP) )), data)
 
 # final check if all value = zero 
-index <- rowSums( df.data[,8:ncol(df.data)]) >0 
-
-df.data <- df.data[index,]
+if (ncol(df.data)==8){
+      df.data <- df.data[df.data[,8]!=0,]
+    }else{
+      index <- rowSums( df.data[,8:ncol(df.data)]) >0 
+      df.data <- df.data[index,]
+    }
 
 write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",

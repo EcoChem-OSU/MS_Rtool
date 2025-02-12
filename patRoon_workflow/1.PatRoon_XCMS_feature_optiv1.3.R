@@ -18,10 +18,10 @@
 ## PARAMETER -- MODIFIED IF NEEDED
 #############
 ## set your working directory
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/NIST_20240501/"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal/"
 
 ## Input data -
-sample.list <- "sample_list_nist.csv"
+sample.list <- "sample_list_midcal_mzML.csv"
 #sample.list <- "UKL_2023/UKL_2023_favs.csv"
 
 # random select subset of the sample to save time
@@ -47,7 +47,7 @@ setwd(workPath)
 datum <- Sys.Date()
 
 ## load data info
-df <- read.table(paste("/input/",sample.list,sep=""), sep=",",header=TRUE)
+df <- read.table(paste(workPath,"/input/",sample.list,sep=""), sep=",",header=TRUE)
 
 anaInfo <- data.frame(cbind(path =df$path, # paste(df$path,"/",df$folder,sep=""),
                                 analysis = df$filename,
