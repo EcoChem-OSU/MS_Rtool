@@ -399,26 +399,29 @@ df.fGroupsSusp <- df.fGroupsSusp[max_conf, ]
 # check if present in pubchem
 dmol <-NULL
 for (i in 1:nrow(df.fGroupsSusp) )
-	{
-	  get.id <- df.fGroupsSusp$susp_InChIKey[i]
-	  
-      fcid <- try ( get_cid(get.id, from =  'inchikey', match='first', verbose = TRUE, arg = NULL) , silent = TRUE )
-      
-      # if present in pubchem get
-     if ( length(fcid$cid)==2 | fcid$cid==0 | is.na(fcid$cid) )  { 
-       dmol <- rbind(dmol, data.frame(CID=NA, IUPACName=NA,XLogP=NA))
-       }else{
-         # data properties from pubchem
-         prop <- pc_prop(fcid$cid, properties =  c('IUPACName','XLogP')
-                         , verbose = TRUE)
-         # check length of prop
-         if (length(prop)==3){dmol <- rbind(dmol,prop)
-           }else{  if (all(names(prop) == c("CID","XLogP") ))
-                     { dmol <- rbind(dmol,c(prop$CID,IUPACName=NA ,prop$XLogP) )
-                    }else{ dmol <- rbind(dmol,c(prop,XLogP=NA) ) }
-              }
-       }
-    }
+{
+  get.id <- df.fGroupsSusp$susp_InChIKey[i]
+  
+  fcid <- try ( get_cid(get.id, from =  'inchikey', match='first', verbose = TRUE, arg = NULL) , silent = TRUE )
+  
+  # if present in pubchem get
+  if ( length(fcid$cid)==2 | fcid$cid==0 | is.na(fcid$cid) )  { 
+        dmol <- rbind(dmol, data.frame(CID=NA, IUPACName=NA,XLogP=NA, CAS=NA))
+      }else{
+    # data properties from pubchem
+    prop <- pc_prop(fcid$cid, properties =  c('IUPACName','XLogP')
+                    , verbose = TRUE)
+    cas <- cir_query(fcid$query, representation = "cas", 
+                     match = "first")
+    
+    # check length of prop 
+    if (length(prop)==3){dmol <- rbind(dmol,prop,cas$cas)
+        }else{  if (all(names(prop) == c("CID","XLogP") ))
+            { dmol <- rbind(dmol,c(prop$CID,IUPACName=NA ,prop$XLogP,cas$cas) )
+        }else{ dmol <- rbind(dmol,c(prop,XLogP=NA,cas$cas) ) }
+            }
+          }
+        }
 
 df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol)
 
@@ -433,22 +436,24 @@ data <- df.fGroupsSusp[ ,names(df.fGroupsSusp) %in% unique(df$group[df$sampletyp
 
 # select minimal info
 df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
-                  ret= as.numeric(df.fGroupsSusp$ret),
-                  mz= as.numeric(df.fGroupsSusp$mz),
-                  InChIKey=df.fGroupsSusp$susp_InChIKey,
-                  estIDLevel=df.fGroupsSusp$susp_estIDLevel,
-                  IUPACName=df.fGroupsSusp$IUPACName,
-                  LogP= as.numeric(df.fGroupsSusp$LogP) )), data)
+                                  ret= as.numeric(df.fGroupsSusp$ret),
+                                  mz= as.numeric(df.fGroupsSusp$mz),
+                                  InChIKey=df.fGroupsSusp$susp_InChIKey,
+                                  estIDLevel=df.fGroupsSusp$susp_estIDLevel,
+                                  IUPACName=df.fGroupsSusp$IUPACName,
+                                  LogP= as.numeric(df.fGroupsSusp$LogP),
+                                  CAS=df.fGroupsSusp.cas )), data)
 
 # final check if all value = zero 
-if (ncol(df.data)==8){
-      df.data <- df.data[df.data[,8]!=0,]
-    }else{
-      index <- rowSums( df.data[,8:ncol(df.data)]) >0 
-      df.data <- df.data[index,]
-    }
+if (ncol(df.data)==9){
+          df.data <- df.data[df.data[,9]!=0,]
+        }else{
+          index <- rowSums( df.data[,9:ncol(df.data)]) >0 
+          df.data <- df.data[index,]
+        }
 
 write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
+
 
