@@ -25,6 +25,7 @@
 ################################################################################
 ## Parameter -- MODIFIED IF NEEDED
 ############
+script.name <- "2.PatRoon_suspectXCMS_DIA_v5.4.R"
 ## path
 # workPath <- "D:/Patroon_NTS"
 workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal"
@@ -37,11 +38,11 @@ check.istd <- "NO"
 istd.list <- "istd_list.csv"
 
 ## Optimized XCMS parameters for peak picking
-opt.ppm = 25
-opt.pw = c(3, 143) # peak width min and max
+opt.ppm = 9.8
+opt.pw = c(16.8, 170) # peak width min and max
 
 ## Parameter for filtering check patroon  help(filter)
-min.intensity.thr = 200## absMinIntensity, typical range between 100 - 1000
+min.intensity.thr = 0## absMinIntensity, typical range between 100 - 1000
 rp.feature = 1 #relMinReplicateAbundance 
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
@@ -52,7 +53,7 @@ MD.filter <- "NO" # used the suspect list to mass filtering.
 
 ## Adduct and formula search parameter
 adduct <- "[M-H]-"
-form.ele <- "CHNOPSFClBrF" #  CHNOPSCl" +BrF are common considered elements for pollutant
+form.ele <- "CHNOSPFCl" #  CHNOPSCl" +BrF are common considered elements for pollutant
                       
 ################################################################################
 ## load library -- DO NOT MODIFIED
@@ -69,7 +70,8 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_Targets_std_List_20240719_Peter_mod.csv",sep="")
-MS2.lib <- c("Fluoros_2.5_editedV4.msp") 
+MS2.lib <- c("Fluoros_2.5_editedV4.msp","MassBank_RIKEN.msp","MassBank_NIST.msp",
+             "DIMSpecForPFAS_2023-10-03.msp") 
 fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20240726.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
@@ -130,6 +132,8 @@ cat( paste("*** patRoon parameter for the run....", Sys.Date()),
      file= f.info, append=TRUE, sep="\n")
 cat( "#########################################################", 
      file= f.info, append=TRUE,sep="\n")
+cat( paste("Scriptname: ", script.name,sep=""), 
+     file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), 
      file= f.info, append=TRUE,sep="\n")
 if (check.istd =="YES"){
@@ -186,7 +190,7 @@ param.xcms <- xcms::CentWaveParam(ppm = opt.ppm,
                               peakwidth = opt.pw,
                               snthresh = 10,
                               prefilter = c(3, 100),
-                              noise = 0 )
+                              noise = 100 )
 
 fListPos <- findFeatures(anaInfo, "xcms3", param = param.xcms)
 
@@ -250,23 +254,8 @@ if (MD.filter=="YES") # Mass defect filtration
   
   fGroups <- patRoon::filter(fGroups ,mzDefectRange = MD.minmax ) 
   
-  }else{}
+}else{}
 
-# -------------------------
-# XCMS deconvolution test see
-## http://bioconductor.riken.jp/packages/3.10/bioc/vignettes/xcms/inst/doc/xcms-lcms-ms.html#3_swath_data_analysis
-# -------------------------
-if (adduct == "[M-H]-") { polarity="negative"}else{polarity="positive"}
-
-swath_data <- getXCMSnExp(fGroups, set=polarity, loadRawData=TRUE) 
-
-cwp <- CentWaveParam(snthresh = 3, noise = 10, ppm = 10,
-                     peakwidth = c(3, 30))
-swath_data <- findChromPeaksIsolationWindow(swath_data, param = cwp)
-
-# reconstruct swath spectra
-swath_spectra <- reconstructChromPeakSpectra(swath_data, expandRt = 0,
-                                             diffRt =2, minCor = 0.8) # reconstruct the data
 # -------------------------
 # reporting
 # -------------------------
@@ -279,10 +268,30 @@ write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
 
 ## export averaged groupfeature as table
 df.fGroups <- as.data.table(fGroups, average = TRUE)
-                
+
 write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
+
+## to speed up keep on sample here....
+SA.group <- unique(df$group[df$sampletype=="SA"])
+fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
+
+# -------------------------
+# XCMS deconvolution test see
+## http://bioconductor.riken.jp/packages/3.10/bioc/vignettes/xcms/inst/doc/xcms-lcms-ms.html#3_swath_data_analysis
+# -------------------------
+if (adduct == "[M-H]-") { polarity="negative"}else{polarity="positive"}
+
+swath_data <- getXCMSnExp(fGroups, set=polarity, loadRawData=TRUE) 
+
+cwp <- CentWaveParam(snthresh = 3, noise = 10, ppm = opt.ppm,
+                     peakwidth = opt.pw)
+swath_data <- findChromPeaksIsolationWindow(swath_data, param = cwp)
+
+# reconstruct swath spectra
+swath_spectra <- reconstructChromPeakSpectra(swath_data, expandRt = 0,
+                                             diffRt =2, minCor = 0.8) # reconstruct the data
 # -------------------------
 # Annotation 
 # -------------------------
@@ -348,9 +357,9 @@ compsMF <- generateCompounds(
               timeoutRetries = 20 )
 
 # Summary of MetFrag Results in a a Single Table
-MFsummary <- as.data.table(compounds)
-outputSummary <- paste(outpath, "MFsummary.csv", sep = "/")
-write.csv(MFsummary, outputSummary)
+# MFsummary <- as.data.table(compounds)
+# outputSummary <- paste(outpath, "MFsummary.csv", sep = "/")
+# write.csv(MFsummary, outputSummary)
 
 # Annotation with the Library MS2 algorithm
 #########################################
@@ -436,28 +445,31 @@ df.fGroupsSusp <- df.fGroupsSusp[max_conf, ]
 # check if present in pubchem
 dmol <-NULL
 for (i in 1:nrow(df.fGroupsSusp) )
-	{
-	  get.id <- df.fGroupsSusp$susp_InChIKey[i]
-	  
-      fcid <- try ( get_cid(get.id, from =  'inchikey', match='first', verbose = TRUE, arg = NULL) , silent = TRUE )
-      
-      # if present in pubchem get
-     if ( length(fcid$cid)==2 | fcid$cid==0 | is.na(fcid$cid) )  { 
-       dmol <- rbind(dmol, data.frame(CID=NA, IUPACName=NA,XLogP=NA))
-       }else{
-         # data properties from pubchem
-         prop <- pc_prop(fcid$cid, properties =  c('IUPACName','XLogP')
-                         , verbose = TRUE)
-         # check length of prop
-         if (length(prop)==3){dmol <- rbind(dmol,prop)
-           }else{  if (all(names(prop) == c("CID","XLogP") ))
-                     { dmol <- rbind(dmol,c(prop$CID,IUPACName=NA ,prop$XLogP) )
-                    }else{ dmol <- rbind(dmol,c(prop,XLogP=NA) ) }
-              }
-       }
+{
+  get.id <- df.fGroupsSusp$susp_InChIKey[i]
+  
+  fcid <- try ( get_cid(get.id, from =  'inchikey', match='first', verbose = TRUE, arg = NULL) , silent = TRUE )
+  
+  # if present in pubchem get
+  if ( length(fcid$cid)==2 | fcid$cid==0 | is.na(fcid$cid) )  { 
+    dmol <- rbind(dmol, c(CID=NA, IUPACName=NA,XLogP=NA, CAS=NA))
+  }else{
+    # data properties from pubchem
+    prop <- pc_prop(fcid$cid, properties =  c('IUPACName','XLogP')
+                    , verbose = TRUE)
+    cas <- cir_query(fcid$query, representation = "cas", 
+                     match = "first")
+    
+    # check length of prop 
+    if (length(prop)==3){dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=prop$IUPACName, XLogP=prop$XLogP, CAS= cas$cas) )
+    }else{  if (all(names(prop) == c("CID","XLogP") ))
+    { dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=NA , XLogP=prop$XLogP, CAS=cas$cas) )
+    }else{ dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=prop$IUPACName,XLogP=NA,CAS=cas$cas) ) }
     }
+  }
+}
 
-df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol)
+df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol )
 
 write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
@@ -470,19 +482,24 @@ data <- df.fGroupsSusp[ ,names(df.fGroupsSusp) %in% unique(df$group[df$sampletyp
 
 # select minimal info
 df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
-                  ret= as.numeric(df.fGroupsSusp$ret),
-                  mz= as.numeric(df.fGroupsSusp$mz),
-                  InChIKey=df.fGroupsSusp$susp_InChIKey,
-                  estIDLevel=df.fGroupsSusp$susp_estIDLevel,
-                  IUPACName=df.fGroupsSusp$IUPACName,
-                  LogP= as.numeric(df.fGroupsSusp$LogP) )), data)
+                                  ret= as.numeric(df.fGroupsSusp$ret),
+                                  mz= as.numeric(df.fGroupsSusp$mz),
+                                  InChIKey=df.fGroupsSusp$susp_InChIKey,
+                                  estIDLevel=df.fGroupsSusp$susp_estIDLevel,
+                                  IUPACName=df.fGroupsSusp$IUPACName,
+                                  LogP= as.numeric(df.fGroupsSusp$LogP),
+                                  CAS=df.fGroupsSusp$CAS )), data)
 
 # final check if all value = zero 
-index <- rowSums( df.data[,8:ncol(df.data)]) >0 
-
-df.data <- df.data[index,]
+if (ncol(df.data)==9){
+  df.data <- df.data[df.data[,9]!=0,]
+}else{
+  index <- rowSums( df.data[,9:ncol(df.data)]) >0 
+  df.data <- df.data[index,]
+}
 
 write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
+save.image(file=paste(outpath,'/',date,'_suspect_NTA_session_DIA.RData',sep="") )

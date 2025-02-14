@@ -24,20 +24,23 @@
 ################################################################################
 ## Parameter -- MODIFIED IF NEEDED
 ############
+script.name <- "2.PatRoon_suspectXCMS_DDA_v5.4.R"
 ## path
 # workPath <- "D:/Patroon_NTS"
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal"
+# workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/WWT_testcode"
 
 ## Input data - 
-sample.list <- "sample_list_midcal_mzML.csv"
+# sample.list <- "sample_list_midcal_mzML.csv"
+sample.list <- "sample_list_testOMS.csv"
 
 # check for ISTD - option are "YES" or "NO"
 check.istd <- "NO"
 istd.list <- "istd_list.csv"
 
 ## Optimized XCMS parameters for peak picking
-opt.ppm = 25
-opt.pw = c(3, 143) # peak width min and max
+opt.ppm = 15
+opt.pw = c(6, 135) # peak width min and max
 
 ## Parameter for filtering check patroon  help(filter)
 min.intensity.thr = 200## absMinIntensity, typical range between 100 - 1000
@@ -45,12 +48,12 @@ rp.feature = 1 #relMinReplicateAbundance
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
 # Mass defect filtering - option are "YES" or "NO"
-MD.filter <- "YES" # used the suspect list to mass filtering.
+MD.filter <- "NO" # used the suspect list to mass filtering.
 #MD.minmax <-c(-0.49,0.50) # based on the merge suspect list (OCDE,NIST,NORMAN,2EPA)
 #MD.minmax <-c(-0.25,0.1) # from Zwiener paper based on OECD suspect list
 
 ## Adduct and formula search parameter
-adduct <- "[M-H]-"
+adduct <- "[M+H]+"
 form.ele <- "CHNOPSFClBrF" #  CHNOPSCl" +BrF are common considered elements for pollutant
                       
 ################################################################################
@@ -128,6 +131,8 @@ f.info <- paste(outpath,"/AA_INFO_RUN_README.txt",sep="")
 cat( paste("*** patRoon parameter for the run....", Sys.Date()), 
      file= f.info, append=TRUE, sep="\n")
 cat( "#########################################################", 
+     file= f.info, append=TRUE,sep="\n")
+cat( paste("Scriptname: ", script.name,sep=""), 
      file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), 
      file= f.info, append=TRUE,sep="\n")
@@ -243,13 +248,13 @@ fGroups <- patRoon::filter(fGroups,
                             retentionRange = NULL, mzRange = NULL)
 
 if (MD.filter=="YES") # Mass defect filtration
-  {
-  MD <- dat$MONOISOTOPIC_MASS-floor(dat$MONOISOTOPIC_MASS) # to follow patRoon def of mass defect.
-  MD.minmax <- c(min(MD),max(MD)) 
-  
-  fGroups <- patRoon::filter(fGroups ,mzDefectRange = MD.minmax ) 
-  
-  }else{}
+      {
+      MD <- dat$MONOISOTOPIC_MASS-floor(dat$MONOISOTOPIC_MASS) # to follow patRoon def of mass defect.
+      MD.minmax <- c(min(MD),max(MD)) 
+      
+      fGroups <- patRoon::filter(fGroups ,mzDefectRange = MD.minmax ) 
+      
+      }else{}
 
 # -------------------------
 # reporting
@@ -270,6 +275,10 @@ write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""
 # -------------------------
 # Annotation 
 # -------------------------
+## to speed up keep on sample here....
+SA.group <- unique(df$group[df$sampletype=="SA"])
+fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
+
 # Retrieve MS peak lists 
 avgPListParams <- getDefAvgPListParams(clusterMzWindow = 0.002)
 mslists <- generateMSPeakLists(fGroups, "mzr", 
@@ -311,9 +320,9 @@ compsMF <- generateCompounds(
               timeoutRetries = 20 )
 
 # Summary of MetFrag Results in a a Single Table
-MFsummary <- as.data.table(compounds)
-outputSummary <- paste(outpath, "MFsummary.csv", sep = "/")
-write.csv(MFsummary, outputSummary)
+# MFsummary <- as.data.table(compounds)
+# outputSummary <- paste(outpath, "MFsummary.csv", sep = "/")
+# write.csv(MFsummary, outputSummary)
 
 # Annotation with the Library MS2 algorithm
 #########################################
@@ -406,8 +415,8 @@ for (i in 1:nrow(df.fGroupsSusp) )
   
   # if present in pubchem get
   if ( length(fcid$cid)==2 | fcid$cid==0 | is.na(fcid$cid) )  { 
-        dmol <- rbind(dmol, data.frame(CID=NA, IUPACName=NA,XLogP=NA, CAS=NA))
-      }else{
+    dmol <- rbind(dmol, c(CID=NA, IUPACName=NA,XLogP=NA, CAS=NA))
+  }else{
     # data properties from pubchem
     prop <- pc_prop(fcid$cid, properties =  c('IUPACName','XLogP')
                     , verbose = TRUE)
@@ -415,15 +424,15 @@ for (i in 1:nrow(df.fGroupsSusp) )
                      match = "first")
     
     # check length of prop 
-    if (length(prop)==3){dmol <- rbind(dmol,prop,cas$cas)
-        }else{  if (all(names(prop) == c("CID","XLogP") ))
-            { dmol <- rbind(dmol,c(prop$CID,IUPACName=NA ,prop$XLogP,cas$cas) )
-        }else{ dmol <- rbind(dmol,c(prop,XLogP=NA,cas$cas) ) }
-            }
-          }
-        }
+    if (length(prop)==3){dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=prop$IUPACName, XLogP=prop$XLogP, CAS= cas$cas) )
+    }else{  if (all(names(prop) == c("CID","XLogP") ))
+    { dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=NA , XLogP=prop$XLogP, CAS=cas$cas) )
+    }else{ dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=prop$IUPACName,XLogP=NA,CAS=cas$cas) ) }
+    }
+  }
+}
 
-df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol)
+df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol )
 
 write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
@@ -442,18 +451,18 @@ df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
                                   estIDLevel=df.fGroupsSusp$susp_estIDLevel,
                                   IUPACName=df.fGroupsSusp$IUPACName,
                                   LogP= as.numeric(df.fGroupsSusp$LogP),
-                                  CAS=df.fGroupsSusp.cas )), data)
+                                  CAS=df.fGroupsSusp$CAS )), data)
 
 # final check if all value = zero 
 if (ncol(df.data)==9){
-          df.data <- df.data[df.data[,9]!=0,]
-        }else{
-          index <- rowSums( df.data[,9:ncol(df.data)]) >0 
-          df.data <- df.data[index,]
-        }
+  df.data <- df.data[df.data[,9]!=0,]
+}else{
+  index <- rowSums( df.data[,9:ncol(df.data)]) >0 
+  df.data <- df.data[index,]
+}
 
 write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
-
+save.image(file=paste(outpath,'/',date,'_suspect_NTA_session_DDA.RData',sep="") )
