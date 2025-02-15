@@ -190,7 +190,7 @@ param.xcms <- xcms::CentWaveParam(ppm = opt.ppm,
                               peakwidth = opt.pw,
                               snthresh = 10,
                               prefilter = c(3, 100),
-                              noise = 100 )
+                              noise = 50 )
 
 fListPos <- findFeatures(anaInfo, "xcms3", param = param.xcms)
 
