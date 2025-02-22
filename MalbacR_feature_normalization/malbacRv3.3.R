@@ -88,6 +88,7 @@ cat( paste("*** malbacR result ****", Sys.Date()), file= f.info, append=TRUE, se
 cat( "##################################", file= f.info, append=TRUE,sep="\n")
 cat( paste("Featuregroup:", fn.df), file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList:", fn.sample.list), file= f.info, append=TRUE,sep="\n")
+cat( paste("Zero convertion to random between:", thr_range[1],"-",thr_range[2]), file= f.info, append=TRUE,sep="\n")
 cat( "      ", file= f.info, sep="\n")
 
 ## load data
