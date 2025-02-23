@@ -23,7 +23,7 @@
 ############
 ## set your working directory
 ## workPath <- "R:/Boris Droz/Proj_UKL_2023/data_analysis/"
-workPath <- "C:/Users/bodro/Documents/Actual/Malbac/"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/"
 
 setwd(workPath) # do not change it
 
@@ -89,7 +89,7 @@ cat( "##################################", file= f.info, append=TRUE,sep="\n")
 cat( paste("Featuregroup:", fn.df), file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList:", fn.sample.list), file= f.info, append=TRUE,sep="\n")
 cat( paste("Zero convertion to random between:", thr_range[1],"-",thr_range[2]), file= f.info, append=TRUE,sep="\n")
-cat( "      ", file= f.info, sep="\n")
+cat( "      ", file= f.info, append=TRUE, sep="\n")
 
 ## load data
 df <- read.table(paste(inpath,fn.df,sep=""), sep="\t", header=TRUE)
@@ -207,7 +207,7 @@ if (length (unique(f_data$batch) ) >1){
         f_data$batch <- match(f_data$batch, myLetters)
   
   }else{
-    cat( paste("*** Only one batch --> 3 equal batches are created  ---", Sys.Date()), file= f.info, sep="\n")
+    cat( "*** Only one batch --> 3 equal batches are created  ---", file= f.info, append=TRUE, sep="\n") 
    
         incr<- ceiling(nrow(f_data)/3)
         f_data$batch[1:incr] <- 1
@@ -216,8 +216,6 @@ if (length (unique(f_data$batch) ) >1){
         f_data$batch <- as.integer(f_data$batch)
 }
 
-
-#####
 #######################################
 ncol(e_data)-1 # check should be similar
 nrow(f_data)###########################
@@ -286,6 +284,7 @@ power <- bc_power(omicsData = mymetabo_2log)
 pareto <- bc_pareto(omicsData = mymetabo_2log)
 
 # QUALITY CONTROL METHODS
+#########################
 # TIGER 
 tigerFilt <- tiger_filter(mod_mymetabo,  #pmart_amide,
                           sampletype_cname = "group",test_val = "QC")
@@ -309,9 +308,9 @@ qcrlsc <- tryCatch( { bc_qcrlsc(omicsData = mymetabo_2log,
                           backtransform  = FALSE,
                           keep_qc = TRUE)}, 
                   error = function(e) {
-                "The first and last sample run for each batch must be a QC sample" })
+                "The first and last sample aquisition run for each batch must be a QC sample" })
 if (is.character(qcrlsc) ) {
-  cat( "qcrlsc not run the first and last sample run for each batch must be a QC sample",
+  cat( "qcrlsc not run because the first and last sample aquisition run for each batch must be a QC sample",
        file= f.info, append=TRUE, sep="\n")
 }
   
@@ -333,6 +332,7 @@ qcrfsc <- edata_transform(omicsData = qcrfsc_abundance,
                           data_scale = "log2")
 
 # OTHER METHODS
+###############
 # ComBat
 combat <- bc_combat(omicsData = mymetabo_norm, 
                     use_groups = FALSE)
@@ -349,8 +349,10 @@ wave_abundance <- bc_waveica(omicsData = mymetabo,
                                    #negative_to_na = TRUE)
 wave <- edata_transform(omicsData = wave_abundance, data_scale = "log2")
 
-## MERGE ALL NORM MODEL>>>>>
-##################################################
+####################################################################################################
+####################################################################################################
+## MERGE ALL NORM MODEL>>>>> Change the next to object if necessary
+###############################################################################
 all.results <-list(mymetabo,range,power,pareto, tiger,qcrlsc,
                    serrf, qcrfsc,
                     combat, eigen,wave)
