@@ -18,19 +18,19 @@
 ## PARAMETER -- MODIFIED IF NEEDED
 #############
 ## set your working directory
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal/"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/midcalPFAS_toy/"
 
 ## Input data -
-sample.list <- "sample_list_midcal_mzML.csv"
+sample.list <- "sample_list_midcal_DDA.csv"
 #sample.list <- "UKL_2023/UKL_2023_favs.csv"
 
 # random select subset of the sample to save time
 ratio <-1
 
 ## Range of xcms parameter to optimize
-ppm.range = c(8,17)
-min_peakwidth.range = c(6, 15)
-max_peakwidth.range = c(80, 140)
+ppm.range = c(3,17)
+min_peakwidth.range = c(1, 15)
+max_peakwidth.range = c(80, 200)
 ###############################################################################
 ###############################################################################
 

@@ -28,22 +28,22 @@ script.name <- "2.PatRoon_suspectXCMS_DDA_v5.4.R"
 ## path
 # workPath <- "D:/Patroon_NTS"
 # workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal"
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/WWT_testcode"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/midcalPFAS_toy"
 
 ## Input data - 
 # sample.list <- "sample_list_midcal_mzML.csv"
-sample.list <- "sample_list_testOMS.csv"
+sample.list <- "sample_list_midcal_DDA.csv"
 
 # check for ISTD - option are "YES" or "NO"
 check.istd <- "NO"
 istd.list <- "istd_list.csv"
 
 ## Optimized XCMS parameters for peak picking
-opt.ppm = 15
-opt.pw = c(6, 135) # peak width min and max
+opt.ppm = 10
+opt.pw = c(3, 164) # peak width min and max
 
 ## Parameter for filtering check patroon  help(filter)
-min.intensity.thr = 200## absMinIntensity, typical range between 100 - 1000
+min.intensity.thr = 100## absMinIntensity, typical range between 100 - 1000
 rp.feature = 1 #relMinReplicateAbundance 
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
@@ -53,7 +53,7 @@ MD.filter <- "NO" # used the suspect list to mass filtering.
 #MD.minmax <-c(-0.25,0.1) # from Zwiener paper based on OECD suspect list
 
 ## Adduct and formula search parameter
-adduct <- "[M+H]+"
+adduct <- "[M-H]-"
 form.ele <- "CHNOPSFClBrF" #  CHNOPSCl" +BrF are common considered elements for pollutant
                       
 ################################################################################
@@ -71,8 +71,9 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_Targets_std_List_20240719_Peter_mod.csv",sep="")
-MS2.lib <- c("Fluoros_2.5_editedV4.msp") 
-fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20220324.csv",sep="")
+MS2.lib <- c("Fluoros_2.5_editedV4.msp","MassBank_RIKEN.msp","MassBank_NIST.msp",
+             "DIMSpecForPFAS_2023-10-03.msp") 
+fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20240726.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
 options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe

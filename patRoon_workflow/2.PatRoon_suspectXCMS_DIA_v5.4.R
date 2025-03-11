@@ -28,18 +28,18 @@
 script.name <- "2.PatRoon_suspectXCMS_DIA_v5.4.R"
 ## path
 # workPath <- "D:/Patroon_NTS"
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/deconvoltest_midcal"
+workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/midcalPFAS_toy"
 
 ## Input data - 
-sample.list <- "sample_list_midcal_mzML.csv"
+sample.list <- "sample_list_midcal_DIA.csv"
 
 # check for ISTD - option are "YES" or "NO"
 check.istd <- "NO"
 istd.list <- "istd_list.csv"
 
 ## Optimized XCMS parameters for peak picking
-opt.ppm = 9.8
-opt.pw = c(16.8, 170) # peak width min and max
+opt.ppm = 8.9
+opt.pw = c(16.4, 59) # peak width min and max
 
 ## Parameter for filtering check patroon  help(filter)
 min.intensity.thr = 0## absMinIntensity, typical range between 100 - 1000
