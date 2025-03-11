@@ -17,8 +17,13 @@ Getting started
 
 Installation
 -----------
-- Check the patron [Handbook section installation](https://rickhelmus.github.io/patRoon/handbook_bd/installation.html)  
-- Run 
+- Check the patron [Handbook section installation](https://rickhelmus.github.io/patRoon/handbook_bd/installation.html)
+- Latest version could be install from github
+``` r 
+install.packages("remotes") 
+remotes::install_github("rickhelmus/patRoonInst")
+``` 
+Then, Run.. 
 ``` r 
 patRoon::verifyDependencies()
 ``` 

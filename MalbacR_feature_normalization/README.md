@@ -13,7 +13,11 @@ Tutorial on [malbacR repository](https://github.com/pmartR/malbacR) and on [pmar
 
 Installation
 -----------
-``` r 
+``` r
+install.packages("devtools")
+```
+Then need to install Rtools compatible with you R version.
+```
 devtools::install_github("pmartR/malbacR")
 
 devtools::install_github("pmartR/pmartR@*release")
