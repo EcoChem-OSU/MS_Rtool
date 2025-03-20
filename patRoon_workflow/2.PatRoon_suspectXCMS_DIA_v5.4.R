@@ -70,8 +70,8 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_Targets_std_List_20240719_Peter_mod.csv",sep="")
-MS2.lib <- c("Fluoros_2.5_editedV4.msp","MassBank_RIKEN.msp","MassBank_NIST.msp",
-             "DIMSpecForPFAS_2023-10-03.msp") 
+MS2.lib <- c("Fluoros_2.5_ed.msp","MassBank_RIKEN.msp","MassBank_NIST.msp",
+             "DIMSpecForPFAS_2023-10-03.msp", "2025-03-19_JF_OSU.msp") 
 fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20240726.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
