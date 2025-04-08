@@ -210,7 +210,7 @@ if (nrow(matched_rows) < 2) {
   next  # Skip the current iteration if matched_rows is empty
 }
 
-  write.table(matched_rows, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"matchsus.csv",sep=""),sep=",", 
+  write.table(matched_rows, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"matchsus.txt",sep=""),sep="\t", 
               append=FALSE, row.names=FALSE,col.names=TRUE, quote=TRUE)
 
   # ################################################################################
@@ -355,7 +355,7 @@ if (nrow(matched_rows) < 2) {
 
 
 else {
-    write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_H_series.txt",sep=""),sep=",", 
+    write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_H_series.txt",sep=""), 
                 append = FALSE, quote = FALSE, sep = "\t",
                 row.names = FALSE, col.names = TRUE )
               
