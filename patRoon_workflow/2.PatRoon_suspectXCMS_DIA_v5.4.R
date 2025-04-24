@@ -31,7 +31,7 @@ script.name <- "2.PatRoon_suspectXCMS_DIA_v5.4.R"
 workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/midcalPFAS_toy"
 
 ## Input data - 
-sample.list <- "sample_list_midcal_DIA.csv"
+sample.list <- "std_list_DIA.csv"
 
 # check for ISTD - option are "YES" or "NO"
 check.istd <- "NO"
@@ -54,6 +54,8 @@ MD.filter <- "NO" # used the suspect list to mass filtering.
 ## Adduct and formula search parameter
 adduct <- "[M-H]-"
 form.ele <- "CHNOSPFCl" #  CHNOPSCl" +BrF are common considered elements for pollutant
+
+ppm.error <- 10
                       
 ################################################################################
 ## load library -- DO NOT MODIFIED
@@ -70,8 +72,8 @@ PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon-install"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 fns <- paste(PatRoon.dir,"/suspect_list/neg_Targets_std_List_20240719_Peter_mod.csv",sep="")
-MS2.lib <- c("Fluoros_2.5_ed.msp","MassBank_RIKEN.msp","MassBank_NIST.msp",
-             "DIMSpecForPFAS_2023-10-03.msp", "2025-03-19_JF_OSU.msp") 
+MS2.lib <- c("Fluoros_2.5_ed.msp","MassBank_RIKEN_2024.06.msp","MassBank_NIST_2024.06.msp",
+             "DIMSpecForPFAS_2023-10-03.msp", "2025-04-14_JF_OSU.msp") 
 fn.metfrag <- paste(PatRoon.dir,"/MetFrag/PubChem_OECDPFAS_largerPFASparts_20240726.csv",sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
@@ -151,7 +153,8 @@ if (MD.filter =="YES"){
   cat("Used suspect list Mass defect filtering ",
 #cat(paste("Mass defect filtering from", MD.minmax[1],"to", MD.minmax[2]),
     file= f.info,append=TRUE, sep="\n")
-  }else{}
+}else{}
+cat( paste("ppm error:", ppm.error), file= f.info, append=TRUE,sep="\n")
 cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
 cat( paste("formula:", form.ele), file= f.info, append=TRUE,sep="\n")
 cat( paste("suspect list:", fns), file= f.info, append=TRUE,sep="\n")
@@ -188,9 +191,9 @@ anaInfo <- data.frame(cbind(path = df$path,
 # Find all features
 param.xcms <- xcms::CentWaveParam(ppm = opt.ppm,
                               peakwidth = opt.pw,
-                              snthresh = 10,
+                              snthresh = 5,
                               prefilter = c(3, 100),
-                              noise = 50 )
+                              noise = 100 )
 
 fListPos <- findFeatures(anaInfo, "xcms3", param = param.xcms)
 
@@ -216,7 +219,7 @@ istd <- data.frame(name = df.istd$name,
 
 fGroupsISTD <- screenSuspects(fList, istd, 
                               rtWindow = 60,
-                              mzWindow = 0.005,
+                              mzWindow = ppm.error/1000,
                               onlyHits = TRUE)
 
 # ## export ISTD intensity data
@@ -333,7 +336,7 @@ mslists <- patRoon::filter(mslistsF,
 
 formulas <- generateFormulasGenForm(fGroups, mslists,
                                     elements = form.ele, 
-                                    relMzDev = 5,
+                                    relMzDev = ppm.error,
                                     absAlignMzDev = 0.002,
                                     topMost = 10,
                                     calculateFeatures = FALSE,
@@ -346,7 +349,7 @@ compsMF <- generateCompounds(
                     fGroups, mslists,
               "metfrag",
               method = "CL",
-              dbRelMzDev = 5 ,
+              dbRelMzDev = ppm.error,
               fragRelMzDev = 5,
               fragAbsMzDev = 0.002,
               database = "pubchemlite",
@@ -374,7 +377,7 @@ suspects <- data.frame(name = dat$ID,
                          stringsAsFactors = FALSE) 
   
 fGroupsSusp <- screenSuspects(fGroups, suspects, 
-                              mzWindow = 0.005,
+                              mzWindow = ppm.error/1000,
                               onlyHits = TRUE) 
 # -------------------------
 # Final Annotation 
@@ -384,7 +387,7 @@ fGroupsSusp_MF <- annotateSuspects(
                     MSPeakLists = mslists,
                     formulas = formulas,
                     compounds = compsMF,
-                    absMzDev = 0.005,
+                    absMzDev = ppm.error/1000,
                     specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
                     checkFragments = c("mz", "formula", "compound"),
                     formulasNormalizeScores = "max",
@@ -395,7 +398,7 @@ fGroupsSusp_Lib <- annotateSuspects(
                     MSPeakLists = mslists,
                     formulas = formulas,
                     compounds = compsLib,
-                    absMzDev = 0.005,
+                    absMzDev = ppm.error/1000,
                     specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
                     checkFragments = c("mz", "formula", "compound"),
                     formulasNormalizeScores = "max",
