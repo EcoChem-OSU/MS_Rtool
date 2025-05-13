@@ -2,16 +2,16 @@
 ### rename files names from wiff and mZXML by folder
 ####################################################
 ## DUMMY TOOL CODE - 
-## version:1.2
-## Date: 2024-01-12
+## version:1.3
+## Date: 2025-05-13
 ## Author: Boris Droz @ Oregon State University
 ###############################################################################
 ## Description:
 
-## require two folder wiff and mzxml in the workdir folder with the file 
+## require two folder .wiff2 and .mzML in the workdir folder with the file 
 ## you want to rename (same number of files)
 ## the code directly rename it on the folder
-## files should be in the same order to rename it
+## files should be in the same order to rename it using opt.1
 ## The code came with two options:
 
 ### Opt. 1: rename wiff similar as the mzxml --assuming file are same order
@@ -23,19 +23,19 @@
 ###############################################################################
 
 ###############################################################################
-###SET PARAMETER
-#################
-wifftype <- ".wiff" # could set ".wiff" or ".wiff2"
-outtype <- ".mzXML" #set mzML or mzXML
-workdir <- "C:/Users/drozditb/Documents/OSU_data_analysis/name_test"
+###SET PARAMETER # file type and folder should have exact same name
+####################################################################
+wifftype <- ".wiff2" # could set ".wiff" or ".wiff2"
+outtype <- ".mzML" #set mzML or mzXML
+workdir <- "E:/Patroon_NTS/BioCrab/7600_20250422/"
 
 # workdir <- "D:/Patroon_NTS/RIL"
 setwd(workdir)
 ###############################################################################
 ## START SCRIPT ## To run anyway
 #################
-f.fns.wiff <- paste(workdir,"/wiff/",sep="")
-f.fns.mzxml <- paste(workdir,"/mzxml/",sep="")
+f.fns.wiff <- paste(workdir,"/",wifftype,"/",sep="")
+f.fns.mzxml <- paste(workdir,"/",outtype,"/",sep="")
   
 fns.wiff <- list.files(path= f.fns.wiff,
                       pattern= paste(wifftype,"$",sep="") ,full.names = FALSE)
@@ -70,8 +70,6 @@ if (length(fns.wiff)==0)
       file.rename( from= old.fns, to= new.fns)
       }
 
-
-
 fns.wiff <-list.files(path= f.fns.wiff,
                      pattern=".wiff.scan" ,full.names = FALSE)
 if (length(fns.wiff)==0)
@@ -102,7 +100,7 @@ write.csv(df.fn.names,"new_sample_namelist.csv",row.names = FALSE)
 ###############################################################
 #### DONT put any extension file on the new name list #########
 ###############################################################
-df.filename <- read.csv("new_sample_namelist.csv",header=TRUE); head(df.filename)
+df.filename <- read.csv("new_sample_namelist.csv",header=TRUE,colClasses = c("character")); head(df.filename)
 
 ## rename wiff
 old.fns <- paste(f.fns.wiff, paste(df.filename$wiff_name,wifftype, sep=""), sep="" )
