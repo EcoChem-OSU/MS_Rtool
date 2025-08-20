@@ -1,5 +1,9 @@
-Sciex 7600 QTOF Sensitivity Monitoring CODE to continually monitor the sensitivity (absolute intensity for standards) across the FIELD lab (OSU) daily instrument running and make a cleaning decision in time when the sensitivity drops clearly
+Sciex 7600 QTOF Sensitivity Monitoring CODE
 ---------------------------------------
+Purpose
+-----------
+To continually monitor the sensitivity (absolute intensity for standards) across the FIELD lab (OSU) daily instrument running and make a cleaning decision in time when the sensitivity drops clearly.
+
 Description
 -----------
 For all the target and internal standards PFAS, separately visualize their absolute response (Area) changes over time as different batch progress on and on...
