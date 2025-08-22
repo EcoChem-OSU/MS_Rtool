@@ -9,7 +9,7 @@
 ###############################################################################
 ## Description (points to be clear before using this script):
 
-  ### point1- ## This script is Using the auto-cal results files (.csv docs) generated from SCIEX QTOF during batches and batches acquisition as input files
+  ### point1- ## This script is using the auto-cal results files (.csv docs) generated from SCIEX QTOF during batches and batches acquisition as input files
   #(For 7600, the auto-cal results files are all already stored in the folder of D:\SCIEX OS Data\7600\Data\Cal
   ### point2- ## If you want to check auto-cal directly in the instrument OS, please download and store this script in the same folder of auto-cal results files. 
   #Or pick up some results files to you own PC
