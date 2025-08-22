@@ -2,7 +2,7 @@ Monitoring and visualizing the Sciex QTOF instrument (7600 or else) auto-calibra
 ---------------------------------------
 Parameters for check
 -----------
-  PPM, Resolution, intensity, etc for different calibrants 
+  PPM, Resolution, Intensity, etc for different calibrants 
 
 Description
 -----------
