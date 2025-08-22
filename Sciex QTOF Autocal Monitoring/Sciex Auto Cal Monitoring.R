@@ -22,7 +22,7 @@ workdir <- "/Volumes/research/EMT/ALS1113/share/Jiaju Fu/Field LAB/7600 autocal 
 setwd(workdir)
 data_dir <- "."
  # Set2: Choose which polarity to analyze: "positive" or "negative" ---
-polarity <- "negative"   # <-- set to "positive" for positive mode
+polarity <- "negative"
 
  # Set3: User name for output folder (leave "" for no name) ----
 Username <- "Jiaju"   # e.g., "Jiaju"; if "", username part is omitted
@@ -332,7 +332,7 @@ plot_variable_by_mz <- function(data_list, variable, title_prefix, out_pdf) {
       scale_color_manual(
         name   = NULL,
         breaks = "Not Found",
-        labels = c("Not Found" = "Not Found"),
+        labels = c("Not Found" = "Not Found (replaced by aver.)"),
         values = c("Normal" = "#2E86AB", "Not Found" = "#E74C3C"),
         drop   = FALSE
       ) +
@@ -417,7 +417,7 @@ plot_variable_cumsum_by_mz <- function(data_list, variable, title_prefix, out_pd
       scale_color_manual(
         name   = NULL,
         breaks = "Not Found",
-        labels = c("Not Found" = "Not Found"),
+        labels = c("Not Found" = "Not Found (replaced by aver.)"),
         values = c("Normal" = "#2E86AB", "Not Found" = "#E74C3C"),
         drop   = FALSE
       ) +
