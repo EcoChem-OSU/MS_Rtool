@@ -23,7 +23,7 @@ Input Files Needed
 > **Provided input example is from the cited paper fig 1 g. Check example input to see format needed. Should be a csv file with no special character (e.g., - % ? ! /). If the data came from excel be sure to change N/A by NA.**
 - Calibration curve (example: ```060121_ccal.csv```): first column content the exact concentration value and follow column contain area count (one per chemical species) for each concentration. The script could handle input calibration curve ```ccal``` input data in mol/L or g/L . In case of g/L unit the formula of each compound provide in the ```target_surrogatet_list``` input is used to convert the g/L into mol/L. ```In.mass``` option defined if mol/L or g/L unit is used. 
 - List of the targets and surrogates (example: ```target_surrogatet_list.csv```): identified the name of each chemical species, formula necessary for mol calculation and type of species (_target_ or _surrogate_). Be sure that chemical formula follow the format of the example. If not sure type ```?calculateMass```
-- Suspects area count (example: ```susp_area_count.csv```): area count one column per suspect and one raw per samples. Should include the area count of all surrogate defined in the ```target_surrogatet_list``.
+- Suspects area count (example: ```susp_area_count.csv```): area count one column per suspect and one raw per samples. Should include the area count of all surrogate defined in the ```target_surrogatet_list```.
 > [!IMPORTANT]
 > **CHECK THAT all chemical names are correctly and similarly written in the _calibration curve_ and _list of the targets and surrogates_ files. _Suspects area count_ MUST contain the same list of surrogate than in _list of the targets and surrogates_ used to calibrate the model. All species not identified in this list are considered as suspect.**
 
@@ -55,4 +55,5 @@ Getting Started
 Citing
 -------
 Cao, D.; Schwichtenberg, T.; Duan, C.; Xue, L.; Muensterman, D.; Field, J. Practical semiquantification strategy for estimating suspect per- and polyfluoroalkyl substance (PFAS) concentrations. J. Am. Soc. Mass Spectrom. 2023, 34 (5), 939–947. [DOI: 10.1021/jasms.3c00019](https://doi.org/10.1021/jasms.3c00019).
+
 
