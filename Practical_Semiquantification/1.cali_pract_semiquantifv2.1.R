@@ -22,15 +22,16 @@
 ## PARAMETER -- MODIFIED IF NEEDED
 ############
 ## set your working directory
-workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Practical_Semiquantification"
+#workdir <- "C:/Users/peeterjo/Documents/SemiQuant"
+workdir <- "R:/Boris Droz/Proj_FORENSICSPFAS/data_/Challenge/data_analysis/2025-09-29NEG_semiquant_model"
 
 setwd(workdir) # do not change it
 
-ccal <- "060121_ccal.csv" # file with data of your calibration curve - 
+ccal <- "calcurve09122025.csv" # file with data of your calibration curve - 
                           ## concentration in function of Area count 
                           ## concentration should be the first column
-unit.label <- "nmol/L" # unit of the concentration label for graph does not 
-                      # influence the calculation but should be specified
+
+unit <- "ng/L" # unit of the concentration 
 
 compounds <-"target_surrogatet_list.csv" # file with compounds information -
                       ## Name of compounds --> should be similar in all files ccal and compounds
@@ -112,6 +113,16 @@ for (i in 1:ncol(df.cal[,names(df.cal)%in%n.targ]))
   name_set <- c(name_set, rep(names(df.cal)[names(df.cal)==n.targ[i]],length(x)) )
 }
 
+# set unit if In.mass
+#####################
+if (In.mass=="YES"){
+  replace_table <- data.frame(
+                    unit = c("ng/L", "mg/L", "µg/L"),
+                    replaceby = c("nmol/L", "mmol/L", "µmol/L") )
+  
+  unit.label <-  replace_table$replaceby[match(unit, replace_table$unit)]
+} else {unit.label <- unit}
+
 ##Step 2: Perform weighted linear regression and calculate uncertainty###################
 #########################################################################################
 ####2.1 Define weight, return k and b
@@ -186,7 +197,6 @@ y_series <- cal$fitted.values
 pred.int <- table_uncertainty(y_series,alpha,data_set,index=1) # index=2 for 1/x2,  
                                                               # index=1 for 1/x
                                                               # index=0 for no weighting
-
 #save cali dataset
 write.table(pred.int, file=paste(output,"/predicted_interval.csv",sep=""),
             sep=",", append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
