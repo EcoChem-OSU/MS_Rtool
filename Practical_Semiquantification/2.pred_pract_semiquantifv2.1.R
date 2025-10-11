@@ -15,7 +15,8 @@
 ## PARAMETER -- MODIFIED IF NEEDED
 ############
 ## set your working directory --> refer to the model folder
-workdir <- "R:/Boris Droz/script_HRMS/Practical Semiquantification/2024-07-30NEG_semiquant_model"
+# workdir <- "R:/Boris Droz/script_HRMS/Practical Semiquantification/2024-07-30NEG_semiquant_model"
+workdir <- "R:/Boris Droz/Proj_FORENSICSPFAS/data_/Challenge/data_analysis/2025-09-29NEG_semiquant_model/2025-10-10NEG_semiquant_model"
 
 setwd(workdir) # do not change it
 
