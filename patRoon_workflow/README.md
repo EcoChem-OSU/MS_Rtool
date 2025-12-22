@@ -50,7 +50,7 @@ Output files included divers dataframes tables and text information
 
 ```AA_INFO_RUN_README.txt```: contain all parameter and setting used for the run  
 ```raw_unaligned_ungrouped.csv```: peak picked features without grouping and RT or m/z alignment  
-```raw_aligned_grouped.csv```: peak picked features grouped and aligned  
+```raw_aligned_grouped.csv```: peak picked features grouped and aligned --> used to check EIS, NIS QA/QC  
 ```featureGroups.csv```: peak picked features grouped, aligned and filtered using Intensity and sample/blank ratio    
 ```featureGroups_averaged.csv```: peak picked features averaged through the replicate  
 ```SuspectScreening_all.csv```: results of the suspect screening (full results)  
