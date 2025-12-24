@@ -130,6 +130,14 @@ fList <- makeSet(fListPos, adducts = adduct)
 
 # performed RT alignement and group feature
 fGroups <- groupFeatures(fList, "xcms3")
+
+# export raw data for control
+df.fGroups <- as.data.table(fGroups)
+df.fGroups <- na.omit(df.fGroups)
+
+write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
                       
 # Basic rule based filtering
 fGroups <- patRoon::filter(fGroups,  
@@ -142,9 +150,16 @@ fGroups <- patRoon::filter(fGroups,
 # reporting
 # -------------------------
 ## export averaged groupfeature as table
-df.fGroups <- patRoon::as.data.table(fGroups, average = TRUE)
-                
+df.fGroups <- as.data.table(fGroups)
+
 write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+## export averaged groupfeature as table
+df.fGroups <- as.data.table(fGroups, average = TRUE)
+
+write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
