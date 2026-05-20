@@ -8,26 +8,22 @@ Compilation of divers script used for suspect list.
 > ** CHECK CAREFELY THE DEPENDENCY.**
 > Info present in section "DEPENDENCY AND FIRST INSTALL" in each script.
 
->[!INFO]
-> 
-
-
 Script catalogue
 ----------------
-1.Fill up_list_using_smile or name_v2.2.R
-2.merge_suspect_list_v4.1.R: Uniffied, fill-up, remove duplicate and create specific pos and neg mod list from suspect list found in depository (i.e., Norman, Nist, EPA, ...)
-3.TPs_predV1.1.R: generate transformation suspect list based on the 
-3. 
-Getfrom_mol_v4.2.R: generate suspect list out of mol file drawing
-PFAS_acronyms
+- 1.Fill up_list_using_smile or name_v2.2.R 
+- 2.merge_suspect_list_v4.1.R: Uniffied, fill-up, remove duplicate and create specific pos and neg mod list from suspect list found in depository (i.e., Norman, Nist, EPA, ...) 
+- 3.TPs_predV1.1.R: generate transformation suspect list based on the patRoon 2.0 (Helmus, 2022). Several tools.
+- 3.TP_pred_envipath -- coming soon 
+- Getfrom_mol_v4.2.R: generate suspect list out of mol file drawing
+- PFAS_acronyms -- coming soon 
 
-Input/Output
-------------
+Input
+------
 Input:
-- FeatureGroups.txt file coming from a peak picking method 
-- Data need to have some QC (pooled samples)  
+- Need a table with at minimal the SMILES, INCIKEY or CAS number   
+>[!WARNING]
+> If you work with CAS number as an input you might have to double check the results. working with SMILES or INCHIKEY are more cleaner.
   
-
 REFERENCES
 ----------
 Helmus, R.; van de Velde, B.; Brunner, A. M.; ter Laak, T. L.; van Wezel, A. P.; Schymanski, E. L. patRoon 2.0: Improved non-target analysis workflows including automated transformation product screening. J. Open Source Softw. 2022, 7 (71), 4029. DOI: 10.21105/joss.04029.
