@@ -1,28 +1,25 @@
-MalbacR: Script to test batch correction methods for features normalization
+Suspect List: working version of divers tool to create/merge suspect list
 --------------------------------------------------------------------------
 Description
 -----------
-Provide metric to evaluate if normalization of the feature is needed (Ding, 2022).  
-Test several normalization methods for HRMS data provide (Leach, 2023).
+Compilation of divers script used for suspect list.
 
-Script is an adapted version based on [malbacR repository](https://github.com/pmartR/malbacR) with some metric to help you over the selection of the method.
+> [!NOTE]
+> ** CHECK CAREFELY THE DEPENDENCY.**
+> Info present in section "DEPENDENCY AND FIRST INSTALL" in each script.
 
-Getting started
+>[!INFO]
+> 
+
+
+Script catalogue
 ----------------
-Tutorial on [malbacR repository](https://github.com/pmartR/malbacR) and on [pmartR repository](https://pmartr.github.io/pmartR/)
-
-Installation
------------
-``` r
-install.packages("devtools")
-```
-Then need to install Rtools compatible with you R version.
-```
-devtools::install_github("pmartR/malbacR")
-
-devtools::install_github("pmartR/pmartR@*release")
-``` 
-
+1.Fill up_list_using_smile or name_v2.2.R
+2.merge_suspect_list_v4.1.R: Uniffied, fill-up, remove duplicate and create specific pos and neg mod list from suspect list found in depository (i.e., Norman, Nist, EPA, ...)
+3.TPs_predV1.1.R: generate transformation suspect list based on the 
+3. 
+Getfrom_mol_v4.2.R: generate suspect list out of mol file drawing
+PFAS_acronyms
 
 Input/Output
 ------------
@@ -37,7 +34,9 @@ Output:
 - Normalized data for each techniques
 - cumulative frequency of the RSD for each techniques
 
-Citing
--------
-Leach, D. T.; et al. Anal. Chem. 2023, 95 (33), 12195-12199. [https://doi.org/10.1021/acs.analchem.3c01289](https://doi.org/10.1021/acs.analchem.3c01289).  
-Ding, X.; et al. Anal. Chem. 2022, 94 (21), 7500-7509. [https://doi.org/10.1021/acs.analchem.1c05502](https://doi.org/10.1021/acs.analchem.1c05502)
+REFERENCES
+----------
+Helmus, R.; van de Velde, B.; Brunner, A. M.; ter Laak, T. L.; van Wezel, A. P.; Schymanski, E. L. patRoon 2.0: Improved non-target analysis workflows including automated transformation product screening. J. Open Source Softw. 2022, 7 (71), 4029. DOI: 10.21105/joss.04029.
+
+Hafner, J., Lorsbach, T., Schmidt, S., Brydon, L., Dost, K., Zhang, K., Fenner, K., & Wicker, J (2024). Advancements in Biotransformation Pathway Prediction: Enhancements, Datasets, and Novel Functionalities in enviPath. Journal of Cheminformatics, 16, 93, https://doi.org/10.1186/s13321-024-00881-6
+

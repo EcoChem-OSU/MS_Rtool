@@ -1,8 +1,8 @@
 ###############################################################################
 ## Title: PatRoon - TPs from a suspect list
 ###############################################################################
-## version:1.0 - modified from Tutorial version of the PatRoon and Handbook
-## Date: 21 October 2025
+## version:1.1 - modified from Tutorial version of the PatRoon and Handbook
+## Date: 2026-05-19
 ## Author: Boris Droz 
 ## Tutorial and Handbook on https://github.com/rickhelmus/patRoon
 ## Depends:
@@ -51,10 +51,10 @@ rdkit <- import("rdkit.Chem")
 ## Parameter
 ############
 
-workdir <- "R:/Boris Droz/script_HRMS/merge_suspect_list/TP_fromsuspect/inout_antibiotics"
+workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Suspect_list"
   
-#fns <- file.choose()  #list with SMILES and more
-fns <- "/Antibiotics_mz_v2.csv"
+fns <- file.choose()  #list with SMILES and more
+# fns <- "/Antibiotics_mz_v2.csv"
 
 generation = 2  # how much generation of TPs to consider, default = 2, 
                 # 3 is max for CTS and Biotransformer
