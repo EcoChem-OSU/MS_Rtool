@@ -27,12 +27,6 @@ Input:
 - FeatureGroups.txt file coming from a peak picking method 
 - Data need to have some QC (pooled samples)  
   
-Output:  
-- %Relative standard deviation (RSD) of feature intensity for all QC (QC_boplot.png)
-- %RSD of feature intensity between replicate for all samples classified by time 
-- PCA for each techniques
-- Normalized data for each techniques
-- cumulative frequency of the RSD for each techniques
 
 REFERENCES
 ----------
