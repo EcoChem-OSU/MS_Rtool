@@ -20,7 +20,7 @@ Script catalogue
 Input
 ------
 Input:
-- Need a table with at minimal the SMILES, INCIKEY or CAS number   
+- Need a table with at minimal the SMILES, INCIKEY or CAS number. See input exemple.   
 >[!WARNING]
 > If you work with CAS number as an input you might have to double check the results. working with SMILES or INCHIKEY are more cleaner.
   
