@@ -118,14 +118,7 @@ for (i in 1:length(fns))
       
      if(is_empty_or_na(dat[,names(dat)=="ID" |names(dat)=="DTXSID" |names(dat)== "SUSPECTID"|names(dat)=="Norman_SusDat_ID"|names(dat)=="DB"]))
         {compil_SL$ID <- paste(name.list[i],"_",seq(from=1,to=nrow(dat),by=1),sep="") }else
-        {
-          compil_SL$ID <- coalesce(
-            dat$ID,
-            dat$DTXSID,
-            dat$SUSPECTID,
-            dat$Norman_SusDat_ID,
-            dat$DB
-          )
+        {compil_SL$ID <- coalesce(dat$ID,dat$DTXSID,dat$SUSPECTID,dat$Norman_SusDat_ID,dat$DB)
           #compil_SL$ID <- dat[,names(dat)=="ID" |names(dat)=="DTXSID" |names(dat)== "SUSPECTID"|names(dat)=="Norman_SusDat_ID"|names(dat)=="DB"]}
         }
           if(is_empty_or_na(dat[,names(dat)=="CASRN" |names(dat)== "CAS"]) ) {}else
@@ -139,7 +132,12 @@ for (i in 1:length(fns))
         {compil_SL$MONOISOTOPIC_MASS <- dat[,names(dat)=="MONOISOTOPIC.MASS" | names(dat)=="MONOISOTOPIC_MASS"| 
                                            names(dat)=="Monoisotopic_mass"| names(dat)== "FIXEDMASS"| names(dat)== "ExactMass" ]} 
      if(is_empty_or_na(dat[,names(dat)=="SMILES"| names(dat)=="SMILES_MS_ready"] )) {}else
-     {compil_SL$SMILES <- dat[,names(dat)=="SMILES"| names(dat)=="SMILES_MS_ready"]}
+     {compil_SL$SMILES <- coalesce(dat$SMILES, dat$SMILES_MS_ready)}
+       #compil_SL$SMILES <- dat[,names(dat)=="SMILES"| names(dat)=="SMILES_MS_ready"]}
+      
+      ## check for CAS bizzard thing
+      if ( any(grepl("CAS_RN:\\s*", compil_SL$CAS)) )
+        {compil_SL$CAS <- sub("CAS_RN:\\s*", "", compil_SL$CAS) }
   
       for (j in 1:nrow(compil_SL))
           {
