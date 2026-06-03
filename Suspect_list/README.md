@@ -7,6 +7,7 @@ Compilation of divers script used for suspect list.
 > [!NOTE]
 > ** CHECK CAREFELY THE DEPENDENCY.**
 > Info present in section "DEPENDENCY AND FIRST INSTALL" in each script.
+> Some dependency are not present in the CRAN and need to be manually added from mention source.
 
 Script catalogue
 ----------------
