@@ -1,0 +1,11 @@
+command: C:/R/Library/patRoonExt/ext/openbabel/obabel.exe
+args: -oinchi -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_in57c46d425cd -O C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_out57c47f187986 --append formula --neutralize changed -xT nochg
+
+---
+
+output:
+
+
+standard error output:
+6 molecules converted
+

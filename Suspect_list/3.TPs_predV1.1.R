@@ -81,10 +81,38 @@ is_empty_or_na <- function(x) {
   
   return(FALSE)  # Everything else -> FALSE
 }
+# ##############################################################################
+# FUNCTION check and produced subDir folder
+###########################################
+#February 2017 -- mod on the 2022-08-18 
+creat.subDir <- function (mainDir,subDir)
+{
+  if ( dir.exists(paste(mainDir,"/",subDir, sep="") ) ){
+    
+    i <- 1
+    while( file.exists( paste(mainDir,"/",subDir,"_",i, sep="") ) )
+    {i <-i+1}
+    
+    dir.create(file.path(mainDir, paste(subDir,"_",i, sep="") ))
+    outpath <- file.path(mainDir, paste(subDir,"_",i, sep=""))
+    
+  } else {
+    dir.create(file.path(mainDir, subDir))
+    outpath <- file.path(mainDir, subDir)
+  }
+  
+  return(outpath)
+}
+################################################################################
 ################################################################################
 setwd(workdir)
-  
-dat <- read.csv(paste(workdir,fns,sep=""), header =TRUE) 
+
+# Set outpath folder
+date <- Sys.Date()
+folder <- paste("/",date,"_TPs", sep="")
+outpath <- creat.subDir(paste(workdir,"/output",sep=""), folder)
+
+dat <- read.csv(fns, header =TRUE) 
 dat <- dat[,names(dat)=="name"|names(dat)=="SMILES"] #select only what you need!
 name.list <- tools::file_path_sans_ext(basename(fns))
 
@@ -377,10 +405,9 @@ for (i in 1:length(dat$SMILES)) { # you might need to run this a couple of time.
   } , error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }
 #######
-date <- Sys.Date()
 
 # save the full list
-write.csv(dat, paste(workdir,"/",date,"_TPs_suspectList.csv",sep=""),
+write.csv(dat, paste(outpath,"/",date,"_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
 
@@ -396,7 +423,7 @@ dat.neg <- dat.neg[!is.na(dat.neg$NumHDonors),]
 
 nrow(dat.neg)
 
-write.csv(dat.neg, paste(workdir,"/",date,"_neg_TPs_suspectList.csv",sep=""),
+write.csv(dat.neg, paste(outpath,"/",date,"_neg_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
 
@@ -411,6 +438,6 @@ dat.pos <- dat.pos[!is.na(dat.pos$NumHAcceptors),]
 
 nrow(dat.pos)
 
-write.csv(dat.pos, paste(workdir,"/",date,"_pos_TPs_suspectList.csv",sep=""),
+write.csv(dat.pos, paste(outpath,"/",date,"_pos_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)

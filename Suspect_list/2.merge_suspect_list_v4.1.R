@@ -44,9 +44,6 @@ rdkit <- import("rdkit.Chem")
 # folder contining all suspect list you want to merge
 workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Suspect_list/"
 
-## name for output list
-out.list <- "20260519_testSL"
-
 # remove non-PFAS (meanning suspect without F)
 rem.noPFAS <- "YES"
 

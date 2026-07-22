@@ -1,0 +1,19 @@
+command: java
+args: -jar C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar -b env -k pred -ismi CC(C)Nc1nc(Cl)nc(NC(C)=O)n1 -s 2 -ocsv C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\btresults57c433ad503.csv
+
+---
+
+output:
+0    [main] INFO  net.sf.jnati.deploy.artefact.ConfigManager  - Loading global configuration
+16   [main] DEBUG net.sf.jnati.deploy.artefact.ConfigManager  - Loading defaults: jar:file:/C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar!/META-INF/jnati/jnati.default-properties
+18   [main] INFO  net.sf.jnati.deploy.artefact.ConfigManager  - Loading artefact configuration: jniinchi-1.03_1
+24   [main] DEBUG net.sf.jnati.deploy.artefact.ConfigManager  - Loading instance defaults: jar:file:/C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar!/META-INF/jnati/jnati.instance.default-properties
+37   [main] INFO  net.sf.jnati.deploy.repository.ClasspathRepository  - Searching classpath for: jniinchi-1.03_1-WINDOWS-AMD64
+42   [main] INFO  net.sf.jnati.deploy.repository.LocalRepository  - Searching local repository for: jniinchi-1.03_1-WINDOWS-AMD64
+42   [main] DEBUG net.sf.jnati.deploy.repository.LocalRepository  - Artefact path: C:\Users\drozditb\.jnati\repo\jniinchi\1.03_1\WINDOWS-AMD64
+65   [main] INFO  net.sf.jnati.deploy.artefact.ManifestReader  - Reading manifest
+1023 [main] INFO  net.sf.jnati.deploy.NativeArtefactLocator  - Artefact (jniinchi-1.03_1-WINDOWS-AMD64) location: C:\Users\drozditb\.jnati\repo\jniinchi\1.03_1\WINDOWS-AMD64
+
+
+standard error output:
+

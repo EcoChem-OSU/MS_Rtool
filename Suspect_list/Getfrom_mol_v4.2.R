@@ -7,6 +7,7 @@
 ## v3.0 April 2020 - B.Droz unistra
 ## v3.1 
 # v4.1 more generic version
+# v4.2 cleaner version @OSU
 ##########
 ## Historic
 #---------
