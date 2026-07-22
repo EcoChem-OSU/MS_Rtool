@@ -6,7 +6,12 @@ Compilation of divers script used for suspect list.
 
 > [!NOTE]
 > ** CHECK CAREFELY THE DEPENDENCY.**
+<<<<<<< HEAD
 > Info present in section "DEPENDENCY AND FIRST INSTALL" in each script.
+=======
+> Info present in section "DEPENDENCY AND FIRST INSTALL" in each script.   
+> Some dependency are not present in the CRAN and need to be manually added from mention source.
+>>>>>>> 57deaf3139a094906e267266af53978a72b68631
 
 Script catalogue
 ----------------
@@ -20,7 +25,11 @@ Script catalogue
 Input
 ------
 Input:
+<<<<<<< HEAD
 - Need a table with at minimal the SMILES, INCIKEY or CAS number   
+=======
+- Need a table with at minimal the SMILES, INCIKEY or CAS number. See input exemple.   
+>>>>>>> 57deaf3139a094906e267266af53978a72b68631
 >[!WARNING]
 > If you work with CAS number as an input you might have to double check the results. working with SMILES or INCHIKEY are more cleaner.
   
