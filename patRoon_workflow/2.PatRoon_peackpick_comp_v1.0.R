@@ -1,8 +1,8 @@
 ###############################################################################
-## Title: PatRoon - feature group only
+## Title: PatRoon - feature peak picking comp
 ###############################################################################
-## version:5.3
-## Date: September 2024
+## version:1.0
+## Date: July 2026
 ## Author: Boris Droz 
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
 ## Depends:
@@ -27,12 +27,13 @@ workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/WWT_testcode"
 ## Input data - 
 sample.list <- "sample_list_testOMS.csv"
 
-## Optimized XCMS parameters for peak picking
-opt.ppm = 25
-opt.pw = c(3, 143) # peak width min and max
+# ## Optimized XCMS parameters for peak picking
+# opt.ppm = 25
+# opt.pw = c(3, 143) # peak width min and max
+## --> current version used defaut parameter for ech peak picking
 
 ## Parameter for filtering check patroon  help(filter)
-min.intensity.thr = 200## absMinIntensity, typical range between 100 - 1000
+min.intensity.thr = 1000## absMinIntensity, typical range between 100 - 1000
 rp.feature = 1 #relMinReplicateAbundance 
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
@@ -97,8 +98,8 @@ cat( "#########################################################",
      file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), 
      file= f.info, append=TRUE,sep="\n")
-cat( paste("XCMS_ppm:", opt.ppm), file= f.info, append=TRUE,sep="\n")
-cat( paste("XCMS_peakwidth:", opt.pw), file= f.info, append=TRUE,sep="\n")
+#cat( paste("XCMS_ppm:", opt.ppm), file= f.info, append=TRUE,sep="\n")
+#cat( paste("XCMS_peakwidth:", opt.pw), file= f.info, append=TRUE,sep="\n")
 cat( paste("absMinIntensity:", min.intensity.thr), 
      file= f.info, append=TRUE,sep="\n")
 cat( paste("relMinReplicateAbundance :", rp.feature), 
@@ -118,27 +119,44 @@ anaInfo <- data.frame(cbind(path = df$path,
 # features
 # -------------------------
 # Find all features
-param.xcms <- xcms::CentWaveParam(ppm = opt.ppm,
-                              peakwidth = opt.pw,
-                              snthresh = 10,
-                              prefilter = c(3, 100),
-                              noise = 0 )
+###################
+fListBRU <- findFeatures(anaInfo, "bruker")
+fListOMS <- findFeatures(anaInfo, "openms") # OpenMS, with default settings
+fListXCMS <- findFeatures(anaInfo, "xcms", ppm = 10) # XCMS
+fListXCMS3 <- findFeatures(anaInfo, "xcms3", 
+                           CentWaveParam(peakwidth = c(5, 15))) # XCMS3
+fListEP <- findFeatures(anaInfo, "envipick", minint = 1E3) # enviPick
+fListSIRIUS <- findFeatures(anaInfo, "sirius") # SIRIUS
+fListKPIC2 <- findFeatures(anaInfo, "kpic2", kmeans = TRUE, level = 1E4) # KPIC2
+fListSAF <- findFeatures(anaInfo, "safd")
 
-fListPos <- findFeatures(anaInfo, "xcms3", param = param.xcms)
 
-fList <- makeSet(fListPos, adducts = adduct)  
+
+# fList <- makeSet(fListPos, adducts = adduct)  
 
 # performed RT alignement and group feature
-fGroups <- groupFeatures(fList, "xcms3")
+fGroupsOMS <- groupFeatures(fListOMS, "openms") # OpenMS grouping, default settings
+fGroupsXCMS <- groupFeatures(fListXCMS, "openms", maxGroupRT = 6) # group XCMS features with OpenMS, adjusted grouping parameter
+# group enviPick features with XCMS3, disable minFraction
+fGroupsXCMS3 <- groupFeatures(fListEP, "xcms3",
+                             xcms::PeakDensityParam(sampleGroups = analInfo$replicate,
+                                                    minFraction = 0))
+# group with KPIC2 and set some custom grouping/aligning parameters
+fGroupsKPIC2 <- groupFeatures(fListKPIC2, "kpic2", groupArgs = list(tolerance = c(0.002, 18)),
+                              alignArgs = list(move = "loess"))
+# greedy algorithm with custom tolerances and weights
+fGroupsGreedy <- groupFeatures(fListXCMS3, "greedy", rtWindow = 5, mzWindow = 0.003,
+                               scoreWeights = c(retention = 0.5, mz = 3, mobility = 1, intensity = 1))
+fGroupsSIRIUS <- groupFeatures(anaInfo, "sirius") # find/group features with SIRIUS
 
-# export raw data for control
-df.fGroups <- as.data.table(fGroups)
-df.fGroups <- na.omit(df.fGroups)
-
-write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.txt", sep=""),
-            append = FALSE, quote = FALSE, sep = "\t",
-            row.names = FALSE,col.names = TRUE )
-                      
+# # export raw data for control
+# df.fGroups <- as.data.table(fGroups)
+# df.fGroups <- na.omit(df.fGroups)
+# 
+# write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.txt", sep=""),
+#             append = FALSE, quote = FALSE, sep = "\t",
+#             row.names = FALSE,col.names = TRUE )
+#                       
 # Basic rule based filtering
 fGroups <- patRoon::filter(fGroups,  
                             absMinIntensity = min.intensity.thr, 
