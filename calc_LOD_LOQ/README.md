@@ -26,7 +26,7 @@ Getting started
                              sequence of column containing the area count (ny in the script) or intensity measured (one per
                              chemical species) for each concentration (NA could be set for no value).  
    - Should be a csv file with no special character (e.g., - % ? ! /).
-   - If the data came from excel be sure to change N/A by NA.
+   - If the data came from excel be sure to change N/A to NA.
    - Double check given example of input if not sure ... be sure to have similar structure (header, column) file.
 3. Do not modified past the PARAMETER section in the R script.
    - Ususally you need to change you work directory (workdir) only
