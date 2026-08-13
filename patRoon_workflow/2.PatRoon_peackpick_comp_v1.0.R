@@ -12,11 +12,22 @@
 ###############################################################################
 ## Description:
 ###############
-## Performed peak picking
+## Performed peak picking with different algorythm
 ## 
 ## Should have a input file with a raw, mzxml folder and the sample list (csv)
 ## need to create an empty output folder
-##
+
+#### --- Warning some option are not available depending on the type of input file ---
+# Algorythm	file types
+# bruker	Bruker‘.d’ files
+# openms	mzML
+# xcms	mzML or mzXML
+# xcms3	mzML or mzXML
+# envipick	mzXML
+# sirius	mzML or mzXML
+# kpic2	mzML or mzXML
+# safd	mzXML
+## 
 ################################################################################
 ## Parameter -- MODIFIED IF NEEDED
 ############
@@ -33,16 +44,19 @@ sample.list <- "sample_list_testOMS.csv"
 ## --> current version used defaut parameter for ech peak picking
 
 ## Parameter for filtering check patroon  help(filter)
+ppm.dev = 10 # Allowed mass deviation (ppm) for trace detection
 min.intensity.thr = 1000## absMinIntensity, typical range between 100 - 1000
 rp.feature = 1 #relMinReplicateAbundance 
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
 ## Adduct and formula search parameter
-adduct <- "[M+H]+"
+# adduct <- "[M+H]+"
                       
 ################################################################################
 ## load library -- DO NOT MODIFIED
 library(patRoon) # v2.3.0
+library(stats)
+library(BiocParallel)
 ###############################################################################
 ###############################################################################
 
@@ -96,16 +110,19 @@ cat( paste("*** patRoon parameter for the run....", Sys.Date()),
      file= f.info, append=TRUE, sep="\n")
 cat( "#########################################################", 
      file= f.info, append=TRUE,sep="\n")
+cat( "PatRoon - feature peak picking comparions between algorythm", 
+     file= f.info, append=TRUE, sep="\n")
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), 
      file= f.info, append=TRUE,sep="\n")
 #cat( paste("XCMS_ppm:", opt.ppm), file= f.info, append=TRUE,sep="\n")
 #cat( paste("XCMS_peakwidth:", opt.pw), file= f.info, append=TRUE,sep="\n")
+cat( paste("Allowed mass deviation (ppm) for trace detection:", ppm.dev), file= f.info, append=TRUE,sep="\n")
 cat( paste("absMinIntensity:", min.intensity.thr), 
      file= f.info, append=TRUE,sep="\n")
 cat( paste("relMinReplicateAbundance :", rp.feature), 
      file= f.info, append=TRUE,sep="\n")
 cat( paste("blankThreshold:", bk.sa.thr), file= f.info, append=TRUE,sep="\n")
-cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
+# cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
 
 ## load data info
 df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
@@ -115,70 +132,163 @@ anaInfo <- data.frame(cbind(path = df$path,
                                 analysis =df$filename,
                                 group = df$group,
                                 blank = df$blank) )
+
+## exemple data set from patroon
+# path <- list.files(patRoonData::exampleDataPath(), full.names=TRUE)
+# 
+# anaInfo <-data.frame(cbind(path = patRoonData::exampleDataPath(), 
+#                            analysis = c(paste(rep("solvent-pos", 3),c("-1","-2","-3"), sep=""), 
+#                                         paste(rep("standard-pos", 3),c("-1","-2","-3"), sep="")),
+#                            group = c(rep("solvent-pos", 3), rep("standard-pos", 3)),
+#                            blank = c(rep("solvent-pos", 6)) ))
+  
 # -------------------------
 # features
 # -------------------------
-# Find all features
-###################
-fListBRU <- findFeatures(anaInfo, "bruker")
-fListOMS <- findFeatures(anaInfo, "openms") # OpenMS, with default settings
-fListXCMS <- findFeatures(anaInfo, "xcms", ppm = 10) # XCMS
-fListXCMS3 <- findFeatures(anaInfo, "xcms3", 
-                           CentWaveParam(peakwidth = c(5, 15))) # XCMS3
-fListEP <- findFeatures(anaInfo, "envipick", minint = 1E3) # enviPick
+# Find all features  --setting for peak homogenized other 
+##########################################################
+#fListBRU <- findFeatures(anaInfo, "bruker")
+fListOMS <- findFeatures(anaInfo, "openms", mzPPM=ppm.dev) # OpenMS, with default settings
+fListXCMS <- findFeatures(anaInfo, "xcms",method = "centWave" ) # Old XCMS --> doesn't work
+fListXCMS3 <- findFeatures(anaInfo, "xcms3",xcms::CentWaveParam(ppm = ppm.dev,
+                                              peakwidth = c(1, 30)) )# NEW XCMS
+fListEP <- findFeatures(anaInfo, "envipick", minint = min.intensity.thr, dmzgap=ppm.dev) # enviPick
 fListSIRIUS <- findFeatures(anaInfo, "sirius") # SIRIUS
-fListKPIC2 <- findFeatures(anaInfo, "kpic2", kmeans = TRUE, level = 1E4) # KPIC2
-fListSAF <- findFeatures(anaInfo, "safd")
-
-
+fListKPIC2 <- findFeatures(anaInfo, "kpic2", kmeans = TRUE, level = 1000) # KPIC2
+fListSAF <- findFeatures(anaInfo, "safd", minInt = min.intensity.thr)
 
 # fList <- makeSet(fListPos, adducts = adduct)  
 
 # performed RT alignement and group feature
-fGroupsOMS <- groupFeatures(fListOMS, "openms") # OpenMS grouping, default settings
-fGroupsXCMS <- groupFeatures(fListXCMS, "openms", maxGroupRT = 6) # group XCMS features with OpenMS, adjusted grouping parameter
-# group enviPick features with XCMS3, disable minFraction
-fGroupsXCMS3 <- groupFeatures(fListEP, "xcms3",
-                             xcms::PeakDensityParam(sampleGroups = analInfo$replicate,
-                                                    minFraction = 0))
-# group with KPIC2 and set some custom grouping/aligning parameters
-fGroupsKPIC2 <- groupFeatures(fListKPIC2, "kpic2", groupArgs = list(tolerance = c(0.002, 18)),
-                              alignArgs = list(move = "loess"))
-# greedy algorithm with custom tolerances and weights
-fGroupsGreedy <- groupFeatures(fListXCMS3, "greedy", rtWindow = 5, mzWindow = 0.003,
-                               scoreWeights = c(retention = 0.5, mz = 3, mobility = 1, intensity = 1))
-fGroupsSIRIUS <- groupFeatures(anaInfo, "sirius") # find/group features with SIRIUS
+###########################################
+# fGroupsBRU<- groupFeatures(fListOMS, "openms")
+# fGroupsOMS <- groupFeatures(fListOMS, "openms") # OpenMS grouping, default settings
+# fGroupsXCMS <- groupFeatures(fListXCMS, "xcms")
+# fGroupsXCMS3 <- groupFeatures(fListXCMS3, "xcms3")
+# fGroupsSIRIUS <- groupFeatures(fListSIRIUS, "sirius")
+# fGroupsKPIC2 <- groupFeatures(fListKPIC2, "kpic2")
 
-# # export raw data for control
-# df.fGroups <- as.data.table(fGroups)
-# df.fGroups <- na.omit(df.fGroups)
-# 
-# write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.txt", sep=""),
-#             append = FALSE, quote = FALSE, sep = "\t",
-#             row.names = FALSE,col.names = TRUE )
+# do grouping with same algo
+############################
+fGroupsOMS <- groupFeatures(fListOMS, "xcms3")
+fGroupsXCMS <- groupFeatures(fListXCMS, "xcms3")
+fGroupsXCMS3 <- groupFeatures(fListXCMS3, "xcms3")
+fGroupsEP <- groupFeatures(fListEP, "xcms3")
+fGroupsSIRIUS <- groupFeatures(fListSIRIUS, "xcms3")
+fGroupsKPIC2 <- groupFeatures(fListKPIC2, "xcms3")
+fGroupsSAF <- groupFeatures(fListSAF, "xcms3")
+
+## Do similar filtering for all data
+####################################
 #                       
 # Basic rule based filtering
-fGroups <- patRoon::filter(fGroups,  
+fGroupsOMS <- patRoon::filter(fGroupsOMS,  
                             absMinIntensity = min.intensity.thr, 
                             relMinReplicateAbundance = rp.feature, 
                             blankThreshold = bk.sa.thr, removeBlanks = TRUE,
                             retentionRange = NULL, mzRange = NULL)
 
+fGroupsXCMS <- patRoon::filter(fGroupsXCMS,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature, 
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = NULL, mzRange = NULL)
+
+fGroupsXCMS3 <- patRoon::filter(fGroupsXCMS3,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature, 
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = NULL, mzRange = NULL)
+
+fGroupsEP <- patRoon::filter(fGroupsEP,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature, 
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = NULL, mzRange = NULL)
+
+fGroupsSIRIUS <- patRoon::filter(fGroupsSIRIUS,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature, 
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = NULL, mzRange = NULL)
+
+fGroupsKPIC2 <- patRoon::filter(fGroupsKPIC2,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature, 
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = NULL, mzRange = NULL)
+
+fGroupsSAF <- patRoon::filter(fGroupsSAF,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature, 
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = NULL, mzRange = NULL)
+
 # -------------------------
 # reporting
 # -------------------------
 ## export averaged groupfeature as table
-df.fGroups <- as.data.table(fGroups)
+df.fGroupsOMS <- as.data.table(fGroupsOMS)
+write.table(df.fGroupsOMS, file=paste(outpath,"/featureGroups_OMS.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
 
-write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
+df.fGroupsXCMS <- as.data.table(fGroupsXCMS)
+write.table(df.fGroupsXCMS, file=paste(outpath,"/featureGroups_XCMS.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsEP <- as.data.table(fGroupsEP)
+write.table(df.fGroupsEP, file=paste(outpath,"/featureGroups_envipick.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsSIRIUS <- as.data.table(fGroupsSIRIUS)
+write.table(df.fGroupsSIRIUS, file=paste(outpath,"/featureGroups_SIRIUS.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsKPIC2 <- as.data.table(fGroupsKPIC2)
+write.table(df.fGroupsKPIC2, file=paste(outpath,"/featureGroups_KPIC2.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsSAF <- as.data.table(fGroupsSAF)
+write.table(df.fGroupsXCMS3, file=paste(outpath,"/featureGroups_SAF.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
 ## export averaged groupfeature as table
-df.fGroups <- as.data.table(fGroups, average = TRUE)
-
-write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
+df.fGroupsOMS <- as.data.table(fGroupsOMS, average = TRUE)
+write.table(df.fGroupsOMS, file=paste(outpath,"/featureGroups_OMS_averaged.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
+
+df.fGroupsXCMS <- as.data.table(fGroupsXCMS, average = TRUE)
+write.table(df.fGroupsXCMS, file=paste(outpath,"/featureGroups_XCMS_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsEP <- as.data.table(fGroupsEP, average = TRUE)
+write.table(df.fGroupsEP, file=paste(outpath,"/featureGroups_envipick_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsSIRIUS <- as.data.table(fGroupsSIRIUS, average = TRUE)
+write.table(df.fGroupsSIRIUS, file=paste(outpath,"/featureGroups_SIRIUS_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsKPIC2 <- as.data.table(fGroupsKPIC2, average = TRUE)
+write.table(df.fGroupsKPIC2, file=paste(outpath,"/featureGroups_KPIC2_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+df.fGroupsSAF <- as.data.table(fGroupsSAF, average = TRUE)
+write.table(df.fGroupsXCMS3, file=paste(outpath,"/featureGroups_SAF_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
+
+
 
 
