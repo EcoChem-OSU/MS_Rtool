@@ -51,12 +51,14 @@ rdkit <- import("rdkit.Chem")
 ## Parameter
 ############
 
-workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Suspect_list"
-  
+# workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Suspect_list"
+workdir <- "C:/Users/drozditb/Documents/OSU_data_analysis/20260813_TP_preds"
+
 fns <- file.choose()  #list with SMILES and more
+fns.envipath <- file.choose()
 # fns <- "/Antibiotics_mz_v2.csv"
 
-generation = 2  # how much generation of TPs to consider, default = 2, 
+generation = 3  # how much generation of TPs to consider, default = 2, 
                 # 3 is max for CTS and Biotransformer
 
 #### TPS library see help if need to change
@@ -64,7 +66,7 @@ CTS.lib <- "combined_photolysis_abiotic_hydrolysis"
 BioTRansformer.typ <- "env"
 
 # merge envipath prediction -- YES or NO
-envipath <- "YES"
+# envipath <- "YES"
   
 ################################################################################
 ################################################################################
@@ -112,12 +114,14 @@ setwd(workdir)
 
 # Set outpath folder
 date <- Sys.Date()
-folder <- paste("/",date,"_TPs", sep="")
+folder <- paste("/",date,"_TPsof_",tools::file_path_sans_ext(basename(fns)), sep="")
 outpath <- creat.subDir(paste(workdir,"/output",sep=""), folder)
 
 dat <- read.csv(fns, header =TRUE) 
 dat <- dat[,names(dat)=="name"|names(dat)=="SMILES"] #select only what you need!
 name.list <- tools::file_path_sans_ext(basename(fns))
+
+dat.envipath <- read.csv(fns.envipath, header =TRUE) 
 
 # 1) fill up your table
 ######################
@@ -195,6 +199,11 @@ if(any( "biosystem" %in% names(dat) )) {
 if(any( "REF" %in% names(dat) )) {
 }else{
   dat <- cbind(dat, REF= rep(NA,nrow(dat))) 
+}
+
+if(any( "SOURCE.PRED" %in% names(dat) )) {
+}else{
+  dat <- cbind(dat, SOURCE.PRED= rep(NA,nrow(dat))) 
 }
 ################################################################################
 # 1b) fill empty field and check data
@@ -285,7 +294,8 @@ dat <-rbind(dat, cbind(name=TPs.CTS$name, SMILES=TPs.CTS$SMILES, ID= TPs.CTS$ID,
                        parent=TPs.CTS$parent, transformation=TPs.CTS$transformation,
                        generation=TPs.CTS$generation, Type=rep("TP",nrow(TPs.CTS) ), 
                        biosystem=rep(NA,nrow(TPs.CTS) ), 
-                       REF=rep(paste("CTS",CTS.lib, sep="_"),nrow(TPs.CTS) ) ) )
+                       REF=rep(paste("CTS",CTS.lib, sep="_"),nrow(TPs.CTS) ) ,
+                       SOURCE.PRED=rep("CTS",nrow(TPs.CTS)) )) 
 
 ### Obtain transformation products (TPs) with BioTransformer
 TPs.biotransf <- generateTPsBioTransformer(
@@ -310,7 +320,8 @@ dat <-rbind(dat, cbind(name=TPs.biotransf$name, SMILES=TPs.biotransf$SMILES,ID= 
                        parent=TPs.biotransf$parent, transformation=TPs.biotransf$transformation,
                        generation=TPs.biotransf$generation, Type=rep("TP",nrow(TPs.biotransf) ), 
                        biosystem=TPs.biotransf$biosystem, 
-                       REF=rep(paste("BioTransformer",BioTRansformer.typ, sep="_"),nrow(TPs.biotransf) ) ) )
+                       REF=rep(paste("BioTransformer",BioTRansformer.typ, sep="_"),nrow(TPs.biotransf) ),
+                      SOURCE.PRED=rep("BioTransformer",nrow(TPs.biotransf)) ))
 
 ## Obtain transformation products (TPs) from a library
 TPs.lib <- generateTPsLibrary(
@@ -337,7 +348,38 @@ dat <-rbind(dat, cbind(name=TPs.lib$name_lib,  SMILES=TPs.lib$SMILES, ID= TPs.li
                        parent=TPs.lib$parent, transformation=TPs.lib$transformation,
                        generation=TPs.lib$generation, Type=rep("TP",nrow(TPs.lib) ), 
                        biosystem=TPs.lib$biosystem, 
-                       REF= TPs.lib$evidencedoi ) )
+                       REF= TPs.lib$evidencedoi,
+                       SOURCE.PRED=rep("library",nrow(TPs.lib)) ))
+
+################################################################################
+## add data obtain in envipath
+# unified data
+#####---------
+#remove the parent
+parent<- dat.envipath[dat.envipath$depth==0,]
+dat.envipath <- dat.envipath[dat.envipath$depth!=0,]
+
+# get INCHIKEY, Formula, mass, .... from smiles
+dat.envipath$INCHIKEY <- sapply(dat.envipath$SMILES, get.inchi.key)
+dat.envipath$FORMULA <- RChemMass::MolFormFromSmiles.rcdk(dat.envipath$SMILES)
+dat.envipath$MONOISOTOPIC_MASS <- MetaboCoreUtils::calculateMass(dat.envipath$FORMULA)
+dat.envipath$parent <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
+
+dat <-rbind(dat, cbind(name=dat.envipath$name,  
+                       SMILES=dat.envipath$SMILES, 
+                       ID= rep(NA,nrow(dat.envipath)), 
+                       CAS=rep(NA,nrow(dat.envipath)),
+                       INCHIKEY=dat.envipath$INCHIKEY, 
+                       FORMULA=dat.envipath$FORMULA, 
+                       MONOISOTOPIC_MASS=dat.envipath$MONOISOTOPIC_MASS, 
+                       parent=dat.envipath$parent, 
+                       transformation=dat.envipath$rule_names,
+                       generation=dat.envipath$depth, 
+                       Type=rep("TP",nrow(dat.envipath) ), 
+                       biosystem=rep(NA,nrow(dat.envipath)), 
+                       REF= dat.envipath$Pathway.URL,
+                       SOURCE.PRED=rep("envipath",nrow(dat.envipath)) ))
+
 ################################################################################
 ################################################################################
 # check out data result
@@ -345,7 +387,7 @@ dat <-rbind(dat, cbind(name=TPs.lib$name_lib,  SMILES=TPs.lib$SMILES, ID= TPs.li
 
 combine_duplicates_by_inchikey <- function(dat, key_col = "INCHIKEY", 
                                            combine_cols = c("name", "parent", 
-                                              "transformation", "generation", "biosystem", "REF")) {
+                                              "transformation", "generation", "biosystem", "REF","SOURCE.PRED")) {
   # Ensure required packages are available
   if (!requireNamespace("dplyr", quietly = TRUE)) stop("Please install the 'dplyr' package.")
   
@@ -410,7 +452,7 @@ for (i in 1:length(dat$SMILES)) { # you might need to run this a couple of time.
 #######
 
 # save the full list
-write.csv(dat, paste(outpath,"/",date,"_TPs_suspectList.csv",sep=""),
+write.csv(dat, paste(outpath,".csv", sep=""), #"/",date,"_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
 
@@ -426,7 +468,7 @@ dat.neg <- dat.neg[!is.na(dat.neg$NumHDonors),]
 
 nrow(dat.neg)
 
-write.csv(dat.neg, paste(outpath,"/",date,"_neg_TPs_suspectList.csv",sep=""),
+write.csv(dat.neg, paste(outpath,"_neg.csv", sep=""),  #"/",date,"_neg_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
 
@@ -441,6 +483,6 @@ dat.pos <- dat.pos[!is.na(dat.pos$NumHAcceptors),]
 
 nrow(dat.pos)
 
-write.csv(dat.pos, paste(outpath,"/",date,"_pos_TPs_suspectList.csv",sep=""),
+write.csv(dat.pos, paste(outpath,"_pos.csv", sep=""),## "/",date,"_pos_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
