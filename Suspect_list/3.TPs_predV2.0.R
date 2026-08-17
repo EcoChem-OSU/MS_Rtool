@@ -169,6 +169,12 @@ if(any( c("SMILES","SMILES_MS_ready") %in% names(dat) )) {
   dat <- cbind(dat, SMILES= rep(NA,nrow(dat)) )
 }
 
+if(any( "target" %in% names(dat) )) {
+  dat$target <- gsub(":", "_", dat$name)
+}else{
+  dat <- cbind(dat, target= gsub(":", "_", dat$name) ) 
+}
+
 if(any( "parent" %in% names(dat) )) {
   dat$parent <- gsub(":", "_", dat$name)
 }else{
@@ -287,10 +293,13 @@ TPs.CTS <- generateTPsCTS(
 
 TPs.CTS <- as.data.table(TPs.CTS)
 
+TPs.CTS$target <- gsub("[^A-Za-z0-9]+", "_", TPs.CTS$parent)
+
 dat <-rbind(dat, cbind(name=TPs.CTS$name, SMILES=TPs.CTS$SMILES, ID= TPs.CTS$ID, 
                        CAS=rep(NA,nrow(TPs.CTS)),
                        INCHIKEY=TPs.CTS$InChIKey, FORMULA=TPs.CTS$formula, 
-                         MONOISOTOPIC_MASS=TPs.CTS$neutralMass, 
+                       MONOISOTOPIC_MASS=TPs.CTS$neutralMass, 
+                       target= TPs.CTS$target,
                        parent=TPs.CTS$parent, transformation=TPs.CTS$transformation,
                        generation=TPs.CTS$generation, Type=rep("TP",nrow(TPs.CTS) ), 
                        biosystem=rep(NA,nrow(TPs.CTS) ), 
@@ -313,10 +322,13 @@ TPs.biotransf <- generateTPsBioTransformer(
 
 TPs.biotransf <- as.data.table(TPs.biotransf)
 
+TPs.biotransf$target <- sub("-TP.*", "", TPs.biotransf$parent)
+
 dat <-rbind(dat, cbind(name=TPs.biotransf$name, SMILES=TPs.biotransf$SMILES,ID= TPs.biotransf$ID, 
                        CAS=rep(NA,nrow(TPs.biotransf)), 
                        INCHIKEY=TPs.biotransf$InChIKey, FORMULA=TPs.biotransf$formula, 
                       MONOISOTOPIC_MASS=TPs.biotransf$neutralMass, 
+                      target= TPs.biotransf$target ,
                        parent=TPs.biotransf$parent, transformation=TPs.biotransf$transformation,
                        generation=TPs.biotransf$generation, Type=rep("TP",nrow(TPs.biotransf) ), 
                        biosystem=TPs.biotransf$biosystem, 
@@ -341,10 +353,13 @@ TPs.lib <- generateTPsLibrary(
 
 TPs.lib <- as.data.table(TPs.lib)
 
+TPs.lib$target <- sub("-TP.*", "", TPs.lib$parent)
+
 dat <-rbind(dat, cbind(name=TPs.lib$name_lib,  SMILES=TPs.lib$SMILES, ID= TPs.lib$ID, 
                        CAS=rep(NA,nrow(TPs.lib)),
                        INCHIKEY=TPs.lib$InChIKey, FORMULA=TPs.lib$formula, 
                        MONOISOTOPIC_MASS=TPs.lib$neutralMass, 
+                       target= TPs.lib$target,
                        parent=TPs.lib$parent, transformation=TPs.lib$transformation,
                        generation=TPs.lib$generation, Type=rep("TP",nrow(TPs.lib) ), 
                        biosystem=TPs.lib$biosystem, 
@@ -363,16 +378,17 @@ dat.envipath <- dat.envipath[dat.envipath$depth!=0,]
 dat.envipath$INCHIKEY <- sapply(dat.envipath$SMILES, get.inchi.key)
 dat.envipath$FORMULA <- RChemMass::MolFormFromSmiles.rcdk(dat.envipath$SMILES)
 dat.envipath$MONOISOTOPIC_MASS <- MetaboCoreUtils::calculateMass(dat.envipath$FORMULA)
-dat.envipath$parent <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
+dat.envipath$target <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
 
 dat <-rbind(dat, cbind(name=dat.envipath$name,  
                        SMILES=dat.envipath$SMILES, 
                        ID= rep(NA,nrow(dat.envipath)), 
                        CAS=rep(NA,nrow(dat.envipath)),
                        INCHIKEY=dat.envipath$INCHIKEY, 
-                       FORMULA=dat.envipath$FORMULA, 
-                       MONOISOTOPIC_MASS=dat.envipath$MONOISOTOPIC_MASS, 
-                       parent=dat.envipath$parent, 
+                       FORMULA=dat.envipath$FORMULA,
+                       MONOISOTOPIC_MASS=dat.envipath$MONOISOTOPIC_MASS,
+                       target=dat.envipath$target,
+                       parent=dat.envipath$parent_smiles, 
                        transformation=dat.envipath$rule_names,
                        generation=dat.envipath$depth, 
                        Type=rep("TP",nrow(dat.envipath) ), 
@@ -380,13 +396,15 @@ dat <-rbind(dat, cbind(name=dat.envipath$name,
                        REF= dat.envipath$Pathway.URL,
                        SOURCE.PRED=rep("envipath",nrow(dat.envipath)) ))
 
+dat$target <- gsub("[^A-Za-z0-9]+", "_", dat$target)# make names target more unified
+
 ################################################################################
 ################################################################################
-# check out data result
-#################
+# clean out and merge data results
+#################################
 
 combine_duplicates_by_inchikey <- function(dat, key_col = "INCHIKEY", 
-                                           combine_cols = c("name", "parent", 
+                                           combine_cols = c("name", "target","parent", 
                                               "transformation", "generation", "biosystem", "REF","SOURCE.PRED")) {
   # Ensure required packages are available
   if (!requireNamespace("dplyr", quietly = TRUE)) stop("Please install the 'dplyr' package.")
@@ -413,19 +431,22 @@ combine_duplicates_by_inchikey <- function(dat, key_col = "INCHIKEY",
 
 dat <- combine_duplicates_by_inchikey(dat)
 
+dat$generation <- sapply(strsplit(dat$generation, ";\\s*"), function(z) {
+  paste(sort(trimws(z)), collapse = ";") }) # unified the order of generation
+
 # clean column "parent"
 # Get the list of valid parent names from rows where Type == "PC"
-valid_parents <- unique(trimws(unlist(strsplit(dat$parent[dat$Type == "PC"], ";"))))
+# valid_parents <- unique(trimws(unlist(strsplit(dat$parent[dat$Type == "PC"], ";"))))
 
 # Function to clean each parent entry
-clean_parent <- function(entry, valid_list) {
-  parts <- trimws(unlist(strsplit(entry, ";")))
-  filtered <- parts[parts %in% valid_list]
-  paste(filtered, collapse = "; ")
-}
-
-# Apply the cleaning function to the whole parent column
-dat$parent <- sapply(dat$parent, clean_parent, valid_list = valid_parents)
+# clean_parent <- function(entry, valid_list) {
+#   parts <- trimws(unlist(strsplit(entry, ";")))
+#   filtered <- parts[parts %in% valid_list]
+#   paste(filtered, collapse = "; ")
+# }
+# 
+# # Apply the cleaning function to the whole parent column
+# dat$parent <- sapply(dat$parent, clean_parent, valid_list = valid_parents)
 
 #' #You need to set anaconda environment prior to running RDKit code
 # reticulate::use_condaenv(condaenv = "my-rdkit-env", conda = "/Users/lrichter/miniconda3/bin/conda")
@@ -452,7 +473,7 @@ for (i in 1:length(dat$SMILES)) { # you might need to run this a couple of time.
 #######
 
 # save the full list
-write.csv(dat, paste(outpath,".csv", sep=""), #"/",date,"_TPs_suspectList.csv",sep=""),
+write.csv(dat, paste(outpath, "/",date,"_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
 
@@ -468,7 +489,7 @@ dat.neg <- dat.neg[!is.na(dat.neg$NumHDonors),]
 
 nrow(dat.neg)
 
-write.csv(dat.neg, paste(outpath,"_neg.csv", sep=""),  #"/",date,"_neg_TPs_suspectList.csv",sep=""),
+write.csv(dat.neg, paste(outpath,"/",date,"_neg_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
 
@@ -483,6 +504,6 @@ dat.pos <- dat.pos[!is.na(dat.pos$NumHAcceptors),]
 
 nrow(dat.pos)
 
-write.csv(dat.pos, paste(outpath,"_pos.csv", sep=""),## "/",date,"_pos_TPs_suspectList.csv",sep=""),
+write.csv(dat.pos, paste(outpath,"/",date,"_pos_TPs_suspectList.csv",sep=""),
           quote = TRUE,
           row.names = FALSE)
