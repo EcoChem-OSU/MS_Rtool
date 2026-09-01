@@ -65,8 +65,8 @@ generation = 3  # how much generation of TPs to consider, default = 2,
 CTS.lib <- "combined_photolysis_abiotic_hydrolysis"
 BioTRansformer.typ <- "env"
 
-# merge envipath prediction -- YES or NO
-# envipath <- "YES"
+# merge envipath prediction -- TRUE or FALSE
+# envipath <- TRUE
   
 ################################################################################
 ################################################################################
@@ -370,31 +370,35 @@ dat <-rbind(dat, cbind(name=TPs.lib$name_lib,  SMILES=TPs.lib$SMILES, ID= TPs.li
 ## add data obtain in envipath
 # unified data
 #####---------
-#remove the parent
-parent<- dat.envipath[dat.envipath$depth==0,]
-dat.envipath <- dat.envipath[dat.envipath$depth!=0,]
+if (envipath){
+    #remove the parent
+    parent<- dat.envipath[dat.envipath$depth==0,]
+    dat.envipath <- dat.envipath[dat.envipath$depth!=0,]
+    
+    # get INCHIKEY, Formula, mass, .... from smiles
+    dat.envipath$INCHIKEY <- sapply(dat.envipath$SMILES, get.inchi.key)
+    dat.envipath$FORMULA <- sapply(dat.envipath$SMILES,
+                              RChemMass::MolFormFromSmiles.rcdk)
+    dat.envipath$MONOISOTOPIC_MASS <- MetaboCoreUtils::calculateMass(dat.envipath$FORMULA)
+    dat.envipath$target <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
+    
+    dat <-rbind(dat, cbind(name=dat.envipath$name,  
+                           SMILES=dat.envipath$SMILES, 
+                           ID= rep(NA,nrow(dat.envipath)), 
+                           CAS=rep(NA,nrow(dat.envipath)),
+                           INCHIKEY=dat.envipath$INCHIKEY, 
+                           FORMULA=dat.envipath$FORMULA,
+                           MONOISOTOPIC_MASS=dat.envipath$MONOISOTOPIC_MASS,
+                           target=dat.envipath$target,
+                           parent=dat.envipath$parent_smiles, 
+                           transformation=dat.envipath$rule_names,
+                           generation=dat.envipath$depth, 
+                           Type=rep("TP",nrow(dat.envipath) ), 
+                           biosystem=rep(NA,nrow(dat.envipath)), 
+                           REF= dat.envipath$Pathway.URL,
+                           SOURCE.PRED=rep("envipath",nrow(dat.envipath)) ))
 
-# get INCHIKEY, Formula, mass, .... from smiles
-dat.envipath$INCHIKEY <- sapply(dat.envipath$SMILES, get.inchi.key)
-dat.envipath$FORMULA <- RChemMass::MolFormFromSmiles.rcdk(dat.envipath$SMILES)
-dat.envipath$MONOISOTOPIC_MASS <- MetaboCoreUtils::calculateMass(dat.envipath$FORMULA)
-dat.envipath$target <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
-
-dat <-rbind(dat, cbind(name=dat.envipath$name,  
-                       SMILES=dat.envipath$SMILES, 
-                       ID= rep(NA,nrow(dat.envipath)), 
-                       CAS=rep(NA,nrow(dat.envipath)),
-                       INCHIKEY=dat.envipath$INCHIKEY, 
-                       FORMULA=dat.envipath$FORMULA,
-                       MONOISOTOPIC_MASS=dat.envipath$MONOISOTOPIC_MASS,
-                       target=dat.envipath$target,
-                       parent=dat.envipath$parent_smiles, 
-                       transformation=dat.envipath$rule_names,
-                       generation=dat.envipath$depth, 
-                       Type=rep("TP",nrow(dat.envipath) ), 
-                       biosystem=rep(NA,nrow(dat.envipath)), 
-                       REF= dat.envipath$Pathway.URL,
-                       SOURCE.PRED=rep("envipath",nrow(dat.envipath)) ))
+  }else{}
 
 dat$target <- gsub("[^A-Za-z0-9]+", "_", dat$target)# make names target more unified
 
