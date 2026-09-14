@@ -3,7 +3,7 @@
 ####################################################
 ## DUMMY TOOL CODE - 
 ## version:1.3
-## Date: 2025-05-13
+## Date: 2026-09-14
 ## Author: Boris Droz @ Oregon State University
 ###############################################################################
 ## Description:
@@ -17,6 +17,7 @@
 ### Opt. 1: rename wiff similar as the mzxml --assuming file are same order
 ### Opt2. first get name on the wiff and mzxml into a table
 ## ..., and then rename it on a table in a"new_names" column 
+## Opt 3. rename only wiff files similar as opt. 2
 
 ###############################################################################
 #### RUN SECTION OF THE CODE STEP BY BLOCK 
@@ -27,7 +28,7 @@
 ####################################################################
 wifftype <- ".wiff2" # could set ".wiff" or ".wiff2"
 outtype <- ".mzML" #set mzML or mzXML
-workdir <- "E:/Patroon_NTS/BioCrab/7600_20250422/"
+workdir <- "R:/Boris Droz/Proj_FORENSICSPFAS/data_/2026-09-14_2source_CWS_SQ/wiff_files/neg/"
 
 # workdir <- "D:/Patroon_NTS/RIL"
 setwd(workdir)
@@ -142,4 +143,57 @@ new.fns <- paste(f.fns.mzxml, paste(df.filename$new_names,
                                     outtype,sep=""), sep="" ) 
 
 file.rename( from= old.fns, to= new.fns)
+
+################################################################################
+## Opt3. first get name on the wiff and mzxml into a table
+## ..., and then rename it on a table in a"new_names" column
+################################################################################
+################################################################################
+
+df.fn.names <- data.frame(cbind(wiff_name= sapply(strsplit(fns.wiff,"[.]"),"[",1)))
+
+# save it and change what you whant in excel or other
+write.csv(df.fn.names,"new_sample_namelist.csv",row.names = FALSE)
+###############################################################################
+###############################################################################
+# modify all filename according to a created "new_names" column
+###############################################################
+#### DONT put any extension file on the new name list #########
+###############################################################
+df.filename <- read.csv("new_sample_namelist.csv",header=TRUE,colClasses = c("character")); head(df.filename)
+
+## rename wiff
+old.fns <- paste(f.fns.wiff, paste(df.filename$wiff_name,wifftype, sep=""), sep="" )
+new.fns <- paste(f.fns.wiff, paste(df.filename$new_names,wifftype, sep=""), sep="" )
+
+file.rename( from= old.fns, to= new.fns)
+
+# ## rename timesseries
+# fns.wiff <-list.files(path= f.fns.wiff,
+#                       pattern=".timeseries.data" ,full.names = FALSE)
+fns.wiff <- paste(f.fns.wiff, paste(df.filename$wiff_name,".timeseries.data" , sep=""), sep="" )
+
+if (length(fns.wiff)==0)
+{ }else{
+  old.fns <- fns.wiff #paste(f.fns.wiff,fns.wiff,sep="")
+  new.fns <- paste(f.fns.wiff, paste(df.filename$new_names,
+                                     ".timeseries.data", sep=""), sep="" )
+  
+  file.rename( from= old.fns, to= new.fns)
+}
+## rename wifff.scan
+# fns.wiff <-list.files(path= f.fns.wiff,
+#                       pattern=".wiff.scan" ,full.names = FALSE)
+fns.wiff <- paste(f.fns.wiff, paste(df.filename$wiff_name,".wiff.scan" , sep=""), sep="" )
+
+
+if (length(fns.wiff)==0)
+{ }else{
+  old.fns <- fns.wiff# paste(f.fns.wiff,fns.wiff,sep="")
+  new.fns <- paste(f.fns.wiff, paste(df.filename$new_names,
+                                     ".wiff.scan",sep=""), sep="" ) 
+  
+  file.rename( from= old.fns, to= new.fns)
+}
+
   
