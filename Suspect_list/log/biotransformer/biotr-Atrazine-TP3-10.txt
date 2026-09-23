@@ -1,0 +1,14 @@
+command: java
+args: -jar C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar -b env -k pred -ismi CC(O)=O -s 3 -ocsv C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\btresults53b876321b3.csv
+
+---
+
+output:
+0    [main] INFO  net.sf.jnati.deploy.artefact.ConfigManager  - Loading global configuration
+
+
+standard error output:
+java.lang.IllegalArgumentException: CC(O)=O
+For the prediction of environmental microbial metabolism, the compound must: 1) be organic; 2) not be a mixture; 3) not be a cofactor or dead end compound, and 4) have a mmolecular mass of 1000 Da. or less.
+For more information, consult the following link: http://eawag-bbd.ethz.ch/predict/notbepredicted.html#Unknowncomp
+
