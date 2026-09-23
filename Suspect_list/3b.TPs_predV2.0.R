@@ -48,15 +48,13 @@ py_install("rdkit") # install python library
 rdkit <- import("rdkit.Chem")
 ################################################################################
 ###############################################################################
-## Parameter
-############
+## PARAMETER
+###############
+workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Suspect_list"
 
-# workdir <- "C:/Users/drozditb/Documents/GitHub/MS_Rtool/Suspect_list"
-workdir <- "C:/Users/drozditb/Documents/OSU_data_analysis/20260813_TP_preds"
-
-fns <- file.choose()  #list with SMILES and more
-fns.envipath <- file.choose()
-# fns <- "/Antibiotics_mz_v2.csv"
+## source files
+fns <- paste(workdir,"/input/input_suspect_testdata.csv", sep="")
+fns.envipath <- paste(workdir,"/output/prediction_envipath_2026-09-22_14-26-37.csv",sep="")
 
 generation = 3  # how much generation of TPs to consider, default = 2, 
                 # 3 is max for CTS and Biotransformer
@@ -66,7 +64,7 @@ CTS.lib <- "combined_photolysis_abiotic_hydrolysis"
 BioTRansformer.typ <- "env"
 
 # merge envipath prediction -- TRUE or FALSE
-# envipath <- TRUE
+envipath <- TRUE
   
 ################################################################################
 ################################################################################
@@ -261,17 +259,22 @@ for (j in 1:nrow(dat))
   }
   # compute formula and monoisotopic mass based on smiles if found before
   if (is_empty_or_na(dat$SMILES[j])) { }else{
-    dat$FORMULA[j] <- RChemMass::MolFormFromSmiles.rcdk(dat$SMILES[j])
-    
-    dat$MONOISOTOPIC_MASS[j] <- MetaboCoreUtils::calculateMass(dat$FORMULA[j])
-  }
+      dat$FORMULA[j] <- RChemMass::MolFormFromSmiles.rcdk(dat$SMILES[j])
+      dat$MONOISOTOPIC_MASS[j] <- MetaboCoreUtils::calculateMass(dat$FORMULA[j])
+    }
   
   if (is_empty_or_na(dat$name[j])) { 
     cids <- get_cid(dat$SMILES[j],from = "smiles", match = "first" )
     dat$name[j] <- pc_prop(cids$cid, properties = "Title")$Title
-    dat$name[j] <- gsub(":", "_", dat$name[j])
+    dat$name[j] <- dat$name[j] |>
+                    gsub("[^[:alnum:]_]", "_", x = _) |>
+                    gsub("_+", "_", x = _) |>
+                    gsub("^_|_$", "", x = _)
     dat$parent <- dat$name
-    }else{ }
+  }else{ dat$name[j] <- dat$name[j] |>
+                        gsub("[^[:alnum:]_]", "_", x = _) |>
+                        gsub("_+", "_", x = _) |>
+                        gsub("^_|_$", "", x = _) }
 }
 ################################################################################
 ## Predict transformation Products
@@ -371,37 +374,66 @@ dat <-rbind(dat, cbind(name=TPs.lib$name_lib,  SMILES=TPs.lib$SMILES, ID= TPs.li
 # unified data
 #####---------
 if (envipath){
-    #remove the parent
-    parent<- dat.envipath[dat.envipath$depth==0,]
-    dat.envipath <- dat.envipath[dat.envipath$depth!=0,]
-    
     # get INCHIKEY, Formula, mass, .... from smiles
     dat.envipath$INCHIKEY <- sapply(dat.envipath$SMILES, get.inchi.key)
     dat.envipath$FORMULA <- sapply(dat.envipath$SMILES,
                               RChemMass::MolFormFromSmiles.rcdk)
     dat.envipath$MONOISOTOPIC_MASS <- MetaboCoreUtils::calculateMass(dat.envipath$FORMULA)
-    dat.envipath$target <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
     
-    dat <-rbind(dat, cbind(name=dat.envipath$name,  
-                           SMILES=dat.envipath$SMILES, 
-                           ID= rep(NA,nrow(dat.envipath)), 
+    #remove the parent
+    parent<- dat.envipath[dat.envipath$depth==0,]
+    dat.envipath <- dat.envipath[dat.envipath$depth!=0,]
+    
+    # dat.envipath$target <- parent$name[match(dat.envipath$Pathway.URL, parent$Pathway.URL)]
+    par.inchikey <- parent$INCHIKEY[match(dat.envipath$parent_smiles,parent$parent_smiles)]
+    dat.envipath$target <- dat$name[match(par.inchikey,dat$INCHIKEY)]
+    
+    # envipath.name <- NULL
+    # 
+    # for (i in 1:nrow(dat.envipath))
+    #     {
+    #       cids <- get_cid(dat.envipath$INCHIKEY[i],from = "inchikey", match = "first" )
+    #       envipath.name[i] <- pc_prop(cids$cid, properties = "Title")$Title
+    # }
+    
+    envipath.name <- rep(NA_character_, nrow(dat.envipath))
+    
+    for (i in seq_len(nrow(dat.envipath))) { # get from Pubchem name of TPs
+       for (attempt in 1:3) {
+            res <- tryCatch({
+          cids <- get_cid(
+            dat.envipath$INCHIKEY[i],
+            from = "inchikey",
+            match = "first"
+          )
+          pc_prop(cids$cid, properties = "Title")$Title
+        }, error = function(e) NA_character_)
+        if (!is.na(res))
+          break
+        Sys.sleep(2 * attempt) # exponential back off
+      }
+      envipath.name[i] <- res
+      Sys.sleep(0.2) # avoid hammering the server
+    }
+    
+    dat <-rbind(dat, cbind(name=envipath.name,  
+                          SMILES=dat.envipath$SMILES, 
+                          ID= dat.envipath$reaction_id, 
                            CAS=rep(NA,nrow(dat.envipath)),
                            INCHIKEY=dat.envipath$INCHIKEY, 
                            FORMULA=dat.envipath$FORMULA,
                            MONOISOTOPIC_MASS=dat.envipath$MONOISOTOPIC_MASS,
                            target=dat.envipath$target,
                            parent=dat.envipath$parent_smiles, 
-                           transformation=dat.envipath$rule_names,
+                           transformation=dat.envipath$reaction_name,
                            generation=dat.envipath$depth, 
                            Type=rep("TP",nrow(dat.envipath) ), 
                            biosystem=rep(NA,nrow(dat.envipath)), 
                            REF= dat.envipath$Pathway.URL,
                            SOURCE.PRED=rep("envipath",nrow(dat.envipath)) ))
-
   }else{}
 
 dat$target <- gsub("[^A-Za-z0-9]+", "_", dat$target)# make names target more unified
-
 ################################################################################
 ################################################################################
 # clean out and merge data results
@@ -455,6 +487,15 @@ dat$generation <- sapply(strsplit(dat$generation, ";\\s*"), function(z) {
 #' #You need to set anaconda environment prior to running RDKit code
 # reticulate::use_condaenv(condaenv = "my-rdkit-env", conda = "/Users/lrichter/miniconda3/bin/conda")
 
+# save the full list
+write.csv(dat, paste(outpath, "/",date,"_TPs_suspectList.csv",sep=""),
+          quote = TRUE,
+          row.names = FALSE)
+
+################################################################################
+##############################################################################
+# creat neg and pos specific suspect list
+#########################################
 ## check for negatif
 dat <- cbind(dat, NumHDonors = rep(NA,nrow(dat)) )
 
@@ -474,15 +515,6 @@ for (i in 1:length(dat$SMILES)) { # you might need to run this a couple of time.
                                                              descriptor ="NumHAcceptors")  
   } , error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }
-#######
-
-# save the full list
-write.csv(dat, paste(outpath, "/",date,"_TPs_suspectList.csv",sep=""),
-          quote = TRUE,
-          row.names = FALSE)
-
-##############################################################################
-# creat neg suspect list
 
 ## double check
 unique(dat$NumHDonors) #what values
