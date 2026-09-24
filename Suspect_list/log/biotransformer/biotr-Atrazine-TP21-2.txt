@@ -1,0 +1,25 @@
+command: java
+args: -jar C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar -b env -k pred -ismi CCNc1ncnc(N)n1 -s 3 -ocsv C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\btresults53b82985b84.csv
+
+---
+
+output:
+0    [main] INFO  net.sf.jnati.deploy.artefact.ConfigManager  - Loading global configuration
+10   [main] DEBUG net.sf.jnati.deploy.artefact.ConfigManager  - Loading defaults: jar:file:/C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar!/META-INF/jnati/jnati.default-properties
+10   [main] INFO  net.sf.jnati.deploy.artefact.ConfigManager  - Loading artefact configuration: jniinchi-1.03_1
+13   [main] DEBUG net.sf.jnati.deploy.artefact.ConfigManager  - Loading instance defaults: jar:file:/C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar!/META-INF/jnati/jnati.instance.default-properties
+17   [main] INFO  net.sf.jnati.deploy.repository.ClasspathRepository  - Searching classpath for: jniinchi-1.03_1-WINDOWS-AMD64
+21   [main] INFO  net.sf.jnati.deploy.repository.LocalRepository  - Searching local repository for: jniinchi-1.03_1-WINDOWS-AMD64
+21   [main] DEBUG net.sf.jnati.deploy.repository.LocalRepository  - Artefact path: C:\Users\drozditb\.jnati\repo\jniinchi\1.03_1\WINDOWS-AMD64
+33   [main] INFO  net.sf.jnati.deploy.artefact.ManifestReader  - Reading manifest
+199  [main] INFO  net.sf.jnati.deploy.NativeArtefactLocator  - Artefact (jniinchi-1.03_1-WINDOWS-AMD64) location: C:\Users\drozditb\.jnati\repo\jniinchi\1.03_1\WINDOWS-AMD64
+199  [main] DEBUG net.sf.jnati.deploy.NativeLibraryLoader  - Loading library: C:\Users\drozditb\.jnati\repo\jniinchi\1.03_1\WINDOWS-AMD64\JniInchi-1.03_1-WINDOWS-AMD64.dll
+Biotransformations: 3
+Unique Biotransformations: 3
+The results were saved to the following file: C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\btresults53b82985b84.csv
+
+Successfully completed metabolism prediction for 1 out of 1 molecule(s).
+
+
+standard error output:
+

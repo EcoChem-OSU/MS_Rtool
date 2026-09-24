@@ -17,8 +17,8 @@ Script catalogue
 ----------------
 - 1.Fill up_list_using_smile or name_v2.2.R 
 - 2.merge_suspect_list_v4.1.R: Uniffied, fill-up, remove duplicate and create specific pos and neg mod list from suspect list found in depository (i.e., Norman, Nist, EPA, ...) 
-- 3.TPs_predV1.1.R: generate transformation suspect list based on the patRoon 2.0 (Helmus, 2022). Several tools.
-- 3.TP_pred_envipath -- coming soon 
+- 3a.TPs_pred_envipath.ipynb: Generate transformation suspect list using enviPath.
+- 3b.TPs_predV1.1.R: generate transformation suspect list based on the patRoon 2.0 (Helmus, 2022). Several tools.
 - Getfrom_mol_v4.2.R: generate suspect list out of mol file drawing
 - PFAS_acronyms -- coming soon 
 
@@ -35,7 +35,9 @@ Input:
   
 REFERENCES
 ----------
-Helmus, R.; van de Velde, B.; Brunner, A. M.; ter Laak, T. L.; van Wezel, A. P.; Schymanski, E. L. patRoon 2.0: Improved non-target analysis workflows including automated transformation product screening. J. Open Source Softw. 2022, 7 (71), 4029. DOI: 10.21105/joss.04029.
+Helmus, R.; van de Velde, B.; Brunner, A. M.; ter Laak, T. L.; van Wezel, A. P.; Schymanski, E. L. patRoon 2.0: Improved non-target analysis workflows including automated transformation product screening. J. Open Source Softw. 2022, 7 (71), 4029. https://doi.org/10.21105/joss.04029
 
 Hafner, J., Lorsbach, T., Schmidt, S., Brydon, L., Dost, K., Zhang, K., Fenner, K., & Wicker, J (2024). Advancements in Biotransformation Pathway Prediction: Enhancements, Datasets, and Novel Functionalities in enviPath. Journal of Cheminformatics, 16, 93, https://doi.org/10.1186/s13321-024-00881-6
+
+Rich, S.L., Hafner, J., Salz, M., Qanbarzadeh, M., Geng, F., Yan, L., Liu, J., Helbling, D.E., Higgins, C.P. and Fenner, K. 2025. FAIR and effective communication of data on chemical contaminant biotransformation in the environment. Environ. Sci. Technol. Lett. 12(11), 1462–1470. https://doi.org/10.1021/acs.estlett.5c00753
 

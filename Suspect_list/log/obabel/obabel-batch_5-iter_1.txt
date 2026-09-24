@@ -1,5 +1,5 @@
 command: C:/R/Library/patRoonExt/ext/openbabel/obabel.exe
-args: -oinchi -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_in57c472aa7fe7 -O C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_out57c45671705 --append formula --neutralize changed -xT nochg
+args: -oinchi -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\obabel_in53b8a19c -O C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\obabel_out53b87dc618eb --append formula --neutralize changed -xT nochg
 
 ---
 
@@ -7,5 +7,4 @@ output:
 
 
 standard error output:
-4 molecules converted
-
+4

@@ -1,0 +1,11 @@
+command: java
+args: -jar C:/R/Library/patRoonExt/ext/biotransformer/biotransformer-3.0.0.jar -b env -k pred -ismi CC(=O)Nc1ncnc(NC(C)=O)n1 -s 3 -ocsv C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\btresults53b8340bf6.csv
+
+---
+
+output:
+0    [main] INFO  net.sf.jnati.deploy.artefact.ConfigManager  - Loading global configuration
+
+
+standard error output:
+

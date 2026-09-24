@@ -1,5 +1,5 @@
 command: C:/R/Library/patRoonExt/ext/openbabel/obabel.exe
-args: -oinchikey -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_in57c45dfe3515 -O C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_out57c47e723164
+args: -oinchikey -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\obabel_in53b81a86369a -O C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\obabel_out53b8dca1be3
 
 ---
 

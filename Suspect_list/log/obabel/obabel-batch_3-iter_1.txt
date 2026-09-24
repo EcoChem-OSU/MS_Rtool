@@ -1,5 +1,5 @@
 command: C:/R/Library/patRoonExt/ext/openbabel/obabel.exe
-args: -oinchi -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_in57c46d425cd -O C:\Users\drozditb\AppData\Local\Temp\RtmpAZU5OB\obabel_out57c47f187986 --append formula --neutralize changed -xT nochg
+args: -oinchi -e -an -xw -xt -iinchi C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\obabel_in53b863756da -O C:\Users\drozditb\AppData\Local\Temp\RtmpgJQc85\obabel_out53b87f8a59a3 --append formula --neutralize changed -xT nochg
 
 ---
 
