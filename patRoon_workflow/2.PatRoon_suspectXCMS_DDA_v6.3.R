@@ -11,7 +11,7 @@
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
 ## Depends:
 ##        R(>=4.6.1)
-##        patRoon(>=2.3.0)
+##        patRoon(>=3.1.0)
 ##        Java 21 download at https://www.oracle.com/java/technologies/downloads/#jdk21-windows
 ###############################################################################
 ## Description:
@@ -36,16 +36,16 @@ workPath <- "D:/patRoon_NTS/BioCrab/"
 # sample.list <- "sample_list_midcal_mzML.csv"
 sample.list <- "sample_biocrab_2025_B1.csv"
 
-# check for ISTD - option are "YES" or "NO"
-check.istd <- "NO"
-istd.list <- "istd_list.csv"
+# check for ISTD - option are TRUE or FALSE
+# check.istd <- FALSE
+# istd.list <- "istd_list.csv"
 
 ## Optimized XCMS parameters for peak picking
 mode <- c("pos","neg") # should be in order pos then neg
-opt.ppm.pos = 14
-opt.pw.pos = c(7, 63) # peak width min and max for pos
-opt.ppm.neg = 14
-opt.pw.neg = c(7, 63) # peak width min and max for neg
+opt.ppm.pos = 10
+opt.pw.pos = c(5, 15) # peak width min and max for pos
+opt.ppm.neg = 10
+opt.pw.neg = c(5, 15) # peak width min and max for neg
 
 ## Parameter for filtering check patroon  help(filter)
 min.intensity.thr = 200 # remove features <intensity, typical range between 100 - 1000
@@ -54,13 +54,13 @@ max.Rep.RSD = 0.75 # remove features with intensity RSD in replicates >ratio - 0
 bk.sa.thr = 3 # remove features <x intensity of (average) blank intensity - never go under 3
 RT.range = c(0.2, 10*60) #in sec
 
-# Mass defect filtering - option are "YES" or "NO"
-MD.filter <- "NO" # used the suspect list to mass filtering.
+# Mass defect filtering - option are TRUE or FALSE
+MD.filter <- FALSE # used the suspect list to mass filtering.
 
 ## Adduct and formula search parameter
 adduct <- c("[M+H]+","[M-H]-")
 form.search <- FALSE #search formula is very long sometimes not necessary 
-form.ele <- "CHNOPSClFBr" #  NO Necessary NEED to modify it -- been re-filter based on you suspect list
+# form.ele <- "CHNOPSClFBr" #  NO Necessary NEED to modify it -- been re-filter based on you suspect list
 ppm.error <- 10 ## qtof typically 5-10 - check you QA/QC to define if smaller
 
 pubchem.search <-"NO" # Kow and add para.search in pubchem - take time
@@ -243,22 +243,33 @@ if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FA
 
 
 ## load data info
-df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
-                sep=",",header=TRUE)
-
-df <-df[df$folder=="C18_pH7_pos"|df$folder=="C18_pH7_neg",]
-
-anaInfo <- data.frame(cbind(path = #df$path, 
-                              paste(df$path_workdir,"/",df$folder,sep=""),
-                                analysis =df$filename,
-                                group = df$group,
-                                blank = df$blank,
-                            mode=df$mode))
+# df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
+#                 sep=",",header=TRUE)
+# 
+# df <-df[df$folder=="C18_pH7_pos"|df$folder=="C18_pH7_neg",]
+# 
+# anaInfo <- data.frame(cbind(path = #df$path, 
+#                               paste(df$path_workdir,"/",df$folder,sep=""),
+#                                 analysis =df$filename,
+#                                 group = df$group,
+#                                 blank = df$blank,
+#                             mode=df$mode))
 ##########################
 ##test case
-##
-anaInfo <- anaInfo[anaInfo$group=="NIST_B"|anaInfo$group=="BK",]
+#############
 
+#anaInfo <- anaInfo[anaInfo$group=="NIST_B"|anaInfo$group=="BK",]
+
+### from patRoon
+# get analysis information for example data, which can be used directly for feature detection
+anaInfo <-cbind(patRoonData::exampleAnalysisInfo("positive")[, c("analysis", "replicate", "blank", "path_centroid")],
+                mode="pos")
+
+anaInfo <- rbind(anaInfo,
+                 cbind(patRoonData::exampleAnalysisInfo("negative")[, c("analysis", "replicate", "blank", "path_centroid")],
+                       mode="neg") )
+
+################
 # -------------------------
 # features
 # -------------------------
@@ -266,33 +277,14 @@ anaInfo <- anaInfo[anaInfo$group=="NIST_B"|anaInfo$group=="BK",]
 
 if (any(grepl("pos", mode)))
       {
-      param.xcms.pos <- xcms::CentWaveParam(ppm = opt.ppm.pos,
+        param.xcms.pos <- xcms::CentWaveParam(ppm = opt.ppm.pos,
                                     peakwidth = opt.pw.pos,
                                     snthresh = 10,
                                     prefilter = c(3, 100),
                                     noise = 50 )
       
-      fListPos <- findFeatures(anaInfo[anaInfo$mode=="pos",], "xcms3", param = param.xcms.pos)
-      
-      # performed RT alignement and group feature
-      fGroupsPos <- patRoon::groupFeatures(fListPos, "xcms3")
-      
-      # Basic rule based filtering
-      fGroupsPos <- patRoon::filter(fGroupsPos,  
-                                 absMinIntensity = min.intensity.thr, 
-                                 relMinReplicateAbundance = rp.feature,
-                                 maxReplicateIntRSD =max.Rep.RSD,
-                                 blankThreshold = bk.sa.thr, removeBlanks = TRUE,
-                                 retentionRange = RT.range, mzRange = NULL)
-      
-      if (MD.filter=="YES") # Mass defect filtration
-      {
-        MD <- dat$MONOISOTOPIC_MASS-floor(dat$MONOISOTOPIC_MASS) # to follow patRoon def of mass defect.
-        fGroupsPos <- patRoon::filter(fGroupsPos, mzDefectRange = c(min(MD),max(MD)),
-                                   negate = TRUE)
-      }else{ }
-      
-    }
+        fListPos <- findFeatures(anaInfo[anaInfo$mode=="pos",], "xcms3", param = param.xcms.pos)
+      }
 
 if (any(grepl("neg", mode)))
       {
@@ -303,105 +295,54 @@ if (any(grepl("neg", mode)))
                                               noise = 50 )
         
         fListNeg <- findFeatures(anaInfo[anaInfo$mode=="neg",], "xcms3", param = param.xcms.neg)
-        # performed RT alignement and group feature
-        fGroupsNeg <- groupFeatures(fListNeg, "xcms3")
-        
-        # Basic rule based filtering
-        fGroupsNeg <- patRoon::filter(fGroupsNeg,  
-                                   absMinIntensity = min.intensity.thr, 
-                                   relMinReplicateAbundance = rp.feature,
-                                   maxReplicateIntRSD =max.Rep.RSD,
-                                   blankThreshold = bk.sa.thr, removeBlanks = TRUE,
-                                   retentionRange = RT.range, mzRange = NULL)
-        
-        if (MD.filter=="YES") # Mass defect filtration
-        {
-          MD <- dat$MONOISOTOPIC_MASS-floor(dat$MONOISOTOPIC_MASS) # to follow patRoon def of mass defect.
-          fGroupsNeg <- patRoon::filter(fGroupsNeg, mzDefectRange = c(min(MD),max(MD)),
-                                     negate = TRUE)
-        }else{ }
       }
-
-# has_pos <- any(grepl("pos", mode))
-# has_neg <- any(grepl("neg", mode))
-# 
-# if (has_pos && has_neg) {
-#       fList <- makeSet(fListPos, fListNeg, adducts = adduct)
-#     } else if (has_pos) {
-#       fList <- makeSet(fListPos, adducts = adduct)
-#     } else if (has_neg) {
-#       fList <- makeSet(fListNeg, adducts = adduct)
-#     }
-
-# df.fList <- as.data.table(fList)
-# df.fList <- na.omit(df.fList)
-# 
-# feat.summ <-data.frame(nb.r.unali_feat =nrow(df.fList))
-# 
-# write.table(df.fList, file=paste(outpath,"/raw_unaligned_ungrouped.txt", sep=""),
-#             append = FALSE, quote = FALSE, sep = "\t",
-#             row.names = FALSE,col.names = TRUE )
-
-## check ISTD on unaligned
-# if (check.istd=="YES") {
-#   
-# df.istd <- read.csv(paste(workPath,"/input/",istd.list,sep=""),
-#                     sep=",",header=TRUE) #open istd list
-# 
-# istd <- data.frame(name = df.istd$name,
-#                    formula = df.istd$formula,
-#                    rt = df.isstd$rt,
-#                    stringsAsFactors = FALSE) 
-# 
-# fGroupsISTD <- screenSuspects(fList, istd, 
-#                               rtWindow = 60,
-#                               mzWindow = 0.005,
-#                               onlyHits = TRUE)
-# 
-# # ## export ISTD intensity data
-# df.fGroupsISTD <- as.data.table(fGroupsISTD, areas = TRUE)
-# df.fGroupsISTD <- na.omit(df.fGroupsISTD)
-# 
-# write.table(df.fGroups, file=paste(outpath,"/ISTD_check.txt", sep=""),
-#             append = FALSE, quote = FALSE, sep = "\t",
-#             row.names = FALSE,col.names = TRUE )
-# }else{}
-
-
-                         
-# # export raw data for control
-# df.fGroups <- as.data.table(fGroups, areas = TRUE)
-# df.fGroups <- na.omit(df.fGroups)
-# 
-# feat.summ <-data.frame(c(feat.summ, nb.al_gfeat =nrow(df.fGroups)) )
-# 
-# write.table(df.fGroups, file=paste(outpath,"/raw_aligned_grouped.txt", sep=""),
-#             append = FALSE, quote = FALSE, sep = "\t",
-#             row.names = FALSE,col.names = TRUE )
-
-
-#components <- generateComponents(fGroups, "camera")
-#fGroups <- selectIons(fGroups, components, prefAdduct=c("[M+H]+", "[M-H]-"))
 
 ## merged pos and neg group together
 has_pos <- any(grepl("pos", mode))
 has_neg <- any(grepl("neg", mode))
 
 if (has_pos && has_neg) {
-  fGroups <- makeSet(fGroupsPos, fGroupsNeg, adducts = adduct)
-    } else if (has_pos) {
-      fGroups <- makeSet(fGroupsPos, adducts = adduct)
-    } else if (has_neg) {
-      fGroups <- makeSet(fGroupsNeg, adducts = adduct)
+  fList <- makeSet(fListPos, fListNeg, adducts =  adduct)
+  } else if (has_pos) {
+    fList <- makeSet(fListPos, adducts =  adduct)
+  } else if (has_neg) {
+    fList <- makeSet(fListNeg, adducts =  adduct)
+}
+
+# performed RT alignement and group feature
+fGroups <- groupFeatures(fList, "xcms3")
+
+df.fGroups <- as.data.table(fGroups, areas = TRUE) # count all feature
+feat.summ <-data.frame(nb.all_grp.feat =nrow(df.fGroups)) 
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos_grp.feat =sum(!is.na(df.fGroups$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos_grp.feat =sum(!is.na(df.fGroups$`adduct-negative`)) ) ) }
+
+# Basic rule based filtering
+fGroups <- patRoon::filter(fGroups,  
+                              absMinIntensity = min.intensity.thr, 
+                              relMinReplicateAbundance = rp.feature,
+                              maxReplicateIntRSD =max.Rep.RSD,
+                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                              retentionRange = RT.range, mzRange = NULL)
+
+if (MD.filter==TRUE) # Mass defect filtration
+    {
+      MD <- dat$MONOISOTOPIC_MASS-floor(dat$MONOISOTOPIC_MASS) # to follow patRoon def of mass defect.
+      fGroupsPos <- patRoon::filter(fGroupsPos, mzDefectRange = c(min(MD),max(MD)),
+                                    negate = TRUE)
     }
 
 # -------------------------
 # reporting
 # -------------------------
-## export groupfeature as table
-df.fGroups <- as.data.table(fGroups, areas = TRUE)
-
-feat.summ <-data.frame(c(feat.summ, nb.fil_feat =nrow(df.fGroups)) )
+df.fGroups <- as.data.table(fGroups, areas = TRUE) # count all feature
+feat.summ <-data.frame(c(feat.summ, nb.filtered_feat =nrow(df.fGroups)) )
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos.filtered_feat =sum(!is.na(df.fGroups$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.neg.filtered_feat =sum(!is.na(df.fGroups$`adduct-negative`)) ) ) }
 
 write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
@@ -410,30 +351,31 @@ write.table(df.fGroups, file=paste(outpath,"/featureGroups.txt", sep=""),
 ## export averaged groupfeature as table
 df.fGroups <- as.data.table(fGroups, average = TRUE,areas = TRUE)
 
-# write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
-#             append = FALSE, quote = FALSE, sep = "\t",
-#             row.names = FALSE,col.names = TRUE )
+write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
 # -------------------------
 # Annotation 
 # -------------------------
 ## to speed up keep on sample here....
-SA.group <- unique(df$group[df$sampletype=="SA"])
-fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
+# SA.group <- unique(df$group[df$sampletype=="SA"])
+# fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
 
 # Retrieve MS peak lists 
-avgPListParams <- getDefAvgPListParams(clusterMzWindow = 0.002)
-mslists <- generateMSPeakLists(fGroups, "mzr", 
-                               maxMSRtWindow = 5, 
-                               precursorMzWindow = 4,
-                               avgFeatParams = avgPListParams, 
-                               avgFGroupParams = avgPListParams)
+#avgPListParams <- getDefAvgPListParams(clusterMzWindow = 0.002)
+mslists <- generateMSPeakLists(fGroups) 
+#                                 , "mzr", 
+#                                maxMSRtWindow = 5, 
+#                                precursorMzWindow = 4,
+#                                avgFeatParams = avgPListParams, 
+#                                avgFGroupParams = avgPListParams)
 
 # Rule based filtering of MS peak lists.
-mslists <- patRoon::filter(mslists, 
-                           withMSMS = TRUE, absMSIntThr = NULL, 
-                            absMSMSIntThr = NULL, relMSIntThr = NULL, 
-                            relMSMSIntThr = 0.05,
-                            topMSPeaks = NULL, topMSMSPeaks = 25)
+# mslists <- patRoon::filter(mslists, 
+#                            withMSMS = TRUE, absMSIntThr = NULL, 
+#                             absMSMSIntThr = NULL, relMSIntThr = NULL, 
+#                             relMSMSIntThr = 0.05,
+#                             topMSPeaks = NULL, topMSMSPeaks = 25)
 
 # get info for groupfeature which one as MS2
 df.mslists <- as.data.table(mslists)
@@ -448,7 +390,12 @@ df.fGroups <- df.fGroups %>%
               left_join(df.mslists, by = "group") %>%
               mutate(type = coalesce(type, "MS"))
 
-feat.summ <-data.frame(c(feat.summ, nb.feat.MS2 =nrow(df.fGroups[df.fGroups$type=="MSMS",])) )
+MS2.feature <- df.fGroups[df.fGroups$type=="MSMS",]
+feat.summ <-data.frame(c(feat.summ, nb.feat.MS2 =nrow(MS2.feature)) )
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos.feat.MS2 =sum(!is.na(MS2.feature$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.neg.feat.MS2 =sum(!is.na(MS2.feature$`adduct-negative`)) ) ) }
 
 write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
@@ -464,7 +411,7 @@ suspects <- data.frame(name = dat$ID,
 fGroupsSusp <- screenSuspects(fGroups, suspects, 
                               mzWindow = 0.005,
                               onlyHits = TRUE) 
-if (form.search=="YES") { 
+if (form.search==TRUE) { 
 
   formulas <- generateFormulasGenForm(fGroupsSusp, mslists,
                                     elements = form.ele,
@@ -511,15 +458,15 @@ compsLib <- generateCompounds(fGroups, mslists, "library",
 # Final Annotation 
 # -------------------------
 
-if (form.search=="YES") { 
+if (form.search==TRUE) { 
 
-fGroupsSusp_MF <- annotateSuspects(
+fGroupsSusp_MF <- estimateIDConfidence(
                     fGroupsSusp,
                     MSPeakLists = mslists,
                     formulas = formulas,
                     compounds = compsMF,
                     absMzDev = 0.005,
-                    specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
+                    #specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
                     checkFragments = c("mz", "formula", "compound"),
                     formulasNormalizeScores = "max",
                     compoundsNormalizeScores = "max") #
@@ -530,30 +477,30 @@ fGroupsSusp_Lib <- annotateSuspects(
                     formulas = formulas,
                     compounds = compsLib,
                     absMzDev = 0.005,
-                    specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
+                    #specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
                     checkFragments = c("mz", "formula", "compound"),
                     formulasNormalizeScores = "max",
                     compoundsNormalizeScores = "max")
 }else{
-  fGroupsSusp_MF <- annotateSuspects(
-    fGroupsSusp,
-    MSPeakLists = mslists,
-    compounds = compsMF,
-    absMzDev = 0.005,
-    specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
-    checkFragments = c("mz", "formula", "compound"),
-    formulasNormalizeScores = "max",
-    compoundsNormalizeScores = "max") #
+  fGroupsSusp_MF <- estimateIDConfidence(
+                    fGroupsSusp,
+                    MSPeakLists = mslists,
+                    compounds = compsMF,
+                    absMzDev = 0.005,
+                    # specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
+                    checkFragments = c("mz", "formula","compound"),
+                    formulasNormalizeScores = "max",
+                    compoundsNormalizeScores = "max") #
   
-  fGroupsSusp_Lib <- annotateSuspects(
-    fGroupsSusp,
-    MSPeakLists = mslists,
-    compounds = compsLib,
-    absMzDev = 0.005,
-    specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
-    checkFragments = c("mz", "formula", "compound"),
-    formulasNormalizeScores = "max",
-    compoundsNormalizeScores = "max")
+  fGroupsSusp_Lib <- estimateIDConfidence(
+                      fGroupsSusp,
+                      MSPeakLists = mslists,
+                      compounds = compsLib,
+                      absMzDev = 0.005,
+                      # specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
+                      checkFragments = c("mz", "formula", "compound"),
+                      formulasNormalizeScores = "max",
+                      compoundsNormalizeScores = "max")
 }
 
 # Take the highest Level conf. between MF and Lib
@@ -596,7 +543,21 @@ df.fGroupsSusp$Source <- ifelse(fully_identical & !max_conf, "", paste(df.fGroup
 # Keep only the unique rows based on ID, keeping the highest value
 df.fGroupsSusp <- df.fGroupsSusp[max_conf, ]
 
-if (pubchem.search=="YES"){
+## Annotation summary
+MS2.annot <- df.fGroupsSusp[df.fGroupsSusp$type=="MSMS",]
+feat.summ <-data.frame(c(feat.summ, nb.Annot.MS2 =nrow(MS2.annot) )) 
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.neg.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-negative`)) ) ) }
+
+feat.summ <-data.frame(c(feat.summ, nb.Annot.MS2 =nrow(df.fGroupsSusp) )) 
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos.Annot =sum(!is.na(df.fGroupsSusp$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.neg.Annot =sum(!is.na(df.fGroupsSusp$`adduct-negative`)) ) ) }
+
+if (pubchem.search==TRUE){
   
   # get chemical names based on InChIKey
   # check if present in pubchem
@@ -667,9 +628,14 @@ if (pubchem.search=="YES"){
               append = FALSE, quote = FALSE, sep = "\t",
               row.names = FALSE,col.names = TRUE )
   
-feat.summ <-data.frame(c(feat.summ, nb.Annot.MS2 =nrow(df.fGroupsSusp[df.fGroupsSusp$type=="MSMS",]) )) 
-  
 }
+
+## save feat.summ
+feat.summ <- stack(feat.summ)
+
+write.table(feat.summ, file=paste(outpath, "/feature_annotation_summary.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
 
 save.image(file=paste(outpath,'/',date,'_suspect_NTA_session_DDA.RData',sep="") )
 
