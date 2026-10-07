@@ -23,17 +23,17 @@
 ############
 ## set your working directory
 #workdir <- "C:/Users/peeterjo/Documents/SemiQuant"
-workdir <- "R:/Boris Droz/Proj_FORENSICSPFAS/data_/Challenge/data_analysis/2025-09-29NEG_semiquant_model"
+workdir <- "R:/Boris Droz/Proj_FORENSICSPFAS/data_/2026-09-14_2source_CWS_SQ/semi-quant"
 
 setwd(workdir) # do not change it
 
-ccal <- "calcurve09122025.csv" # file with data of your calibration curve - 
+ccal <- "20260604_CalCurve_Area.csv" # file with data of your calibration curve - 
                           ## concentration in function of Area count 
                           ## concentration should be the first column
 
 unit <- "ng/L" # unit of the concentration 
 
-compounds <-"target_surrogatet_list.csv" # file with compounds information -
+compounds <-"target_surrogatet_list_2026.csv" # file with compounds information -
                       ## Name of compounds --> should be similar in all files ccal and compounds
                       
 In.mass <- "YES" # option for mass in gram or substance in mole based unit 
@@ -155,7 +155,7 @@ png(filename = paste(output,"/Semiquant_residual_plot.png",sep=""),width = 480, 
 
 par(mar=c(5, 5, 2, 2) )
 ####plot this weighted linear regression
-plot(data_set$x,cal$residuals,
+plot(cal$model$x,cal$residuals, #data_set$x,cal$residuals,
      xlab=paste("Target concentration (", unit.label,")",sep=""),
      ylab= "Residual",
      las=1,
