@@ -50,7 +50,7 @@ n.sur <-  df.compounds$Name[df.compounds$Type=="surrogate"]
 ## check if data set contain the same number of surrogate than used in the calibration
 if (sum(names(df.cal)%in%n.sur) == length(n.sur)) {
 
-    av.sur <- apply(df.cal[,names(df.cal)%in%n.sur],1,mean)
+    av.sur <- apply(df.cal[,names(df.cal)%in%n.sur],1,mean,na.rm=TRUE)
     
     susp <- select_if(df.cal[,!names(df.cal)%in%n.sur],is.numeric) # select suspect only
     
