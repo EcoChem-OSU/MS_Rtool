@@ -5,7 +5,7 @@
 ###############################################################################
 ## Title: PatRoon - suspect screening 
 ###############################################################################
-## version:6.2
+## version:6.3
 ## Date: August 2026
 ## Author: Boris Droz 
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
@@ -28,7 +28,7 @@
 ################################################################################
 ## Parameter -- MODIFIED IF NEEDED
 ############
-script.name <- "2.PatRoon_suspectXCMS_DDA_v6.2.R"
+script.name <- "2.PatRoon_suspectXCMS_DDA_v6.3.R"
 ## path
 workPath <- "D:/patRoon_NTS/BioCrab/"
 
@@ -36,35 +36,56 @@ workPath <- "D:/patRoon_NTS/BioCrab/"
 # sample.list <- "sample_list_midcal_mzML.csv"
 sample.list <- "sample_biocrab_2025_B1.csv"
 
-# check for ISTD - option are TRUE or FALSE
-# check.istd <- FALSE
+# check for ISTD - option are TRUE or FALSE 
+## option doesn't work on this version yet.
+check.istd <- FALSE
 # istd.list <- "istd_list.csv"
 
 ## Optimized XCMS parameters for peak picking
-mode <- c("pos","neg") # should be in order pos then neg
+mode <- c("pos") #,"neg") # should be in order pos then neg
 opt.ppm.pos = 10
 opt.pw.pos = c(5, 15) # peak width min and max for pos
 opt.ppm.neg = 10
 opt.pw.neg = c(5, 15) # peak width min and max for neg
 
-## Parameter for filtering check patroon  help(filter)
-min.intensity.thr = 200 # remove features <intensity, typical range between 100 - 1000
-rp.feature = 1 # features should be in all analysis of replicate groups
-max.Rep.RSD = 0.75 # remove features with intensity RSD in replicates >ratio - 0.75 good cutoff
-bk.sa.thr = 3 # remove features <x intensity of (average) blank intensity - never go under 3
-RT.range = c(0.2, 10*60) #in sec
+## Parameter for filtering check patroon  help(filter) - NULL to remove filter
+min.intensity.thr = NULL # remove features <intensity, typical range between 100 - 1000
+rp.feature = NULL # 1= features should be in all analysis of replicate groups
+max.Rep.RSD = NULL # remove features with intensity RSD in replicates >ratio - 0.75 good cutoff
+bk.sa.thr = NULL # remove features <x intensity of (average) blank intensity - never go under 3
+RT.range = c(0, Inf) #in sec 0 Inf to not select
 
 # Mass defect filtering - option are TRUE or FALSE
 MD.filter <- FALSE # used the suspect list to mass filtering.
 
 ## Adduct and formula search parameter
-adduct <- c("[M+H]+","[M-H]-")
+custom.metfrag <-TRUE #generate custom metfrag 
+adduct <- c("[M+H]+") #,"[M-H]-")
 form.search <- FALSE #search formula is very long sometimes not necessary 
-# form.ele <- "CHNOPSClFBr" #  NO Necessary NEED to modify it -- been re-filter based on you suspect list
+form.ele <- "CHNOPSClFBr" #  NO Necessary NEED to modify it -- been re-filter based on you suspect list
 ppm.error <- 10 ## qtof typically 5-10 - check you QA/QC to define if smaller
 
-pubchem.search <-"NO" # Kow and add para.search in pubchem - take time
+#post analysis
+pubchem.search <-FALSE # Kow and add para.search in pubchem - take time
                       
+###############################################################################
+## Path of the script
+####################
+## path -- generally set once and do not need to be change
+# PatRoon.directory -> where suspect, MS2, ... are
+PatRoon.dir <- "D:/patRoon_NTS/library/"
+
+## set suspect list, MS2 and Metfrag all located in PatRoon.dir
+f.susp.list <- paste(PatRoon.dir,"/suspect_list/pos_susdat_2024-01-12-082351_ed.csv",sep="")
+f.target.list <- paste(PatRoon.dir,"/suspect_list/", sep="")
+
+MS2.lib <- list.files(paste(PatRoon.dir, "/MS2_library",sep=""),pattern= "msp" )#load all library contained here...
+
+## set path to -- GENERALLY DO NOT NEED TO MODIFY
+options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe
+options(patRoon.path.MetFragCL = 
+          paste(PatRoon.dir,"/MetFrag/MetFragCommandLine-2.5.0.jar", sep="")) # metfrag exe
+
 ################################################################################
 ## load library -- DO NOT MODIFIED
 library(patRoon) # v2.3.0
@@ -73,28 +94,10 @@ library(BiocParallel)
 library(dplyr)
 library(webchem)
 library(stats)
-###############################################################################
-## Parameter
-############
-## path -- generally set once and do not need to be change
-# PatRoon.directory -> where suspect, MS2, ... are
-PatRoon.dir <- "D:/patRoon_NTS/library/"
-
-## set suspect list, MS2 and Metfrag all located in PatRoon.dir
-fns <- paste(PatRoon.dir,"/suspect_list/pos_SLPFAS_nist_susdat_ocde_master_struct_v2.1.csv",sep="")
-
-MS2.lib <- c("2025-06-04_JF_OSU.msp","DIMSpecForPFAS_2023-10-03.msp","Fluoros_2.5_ed.msp",
-             "MassBank_NIST_2024.06.msp", "MassBank_RIKEN_2024.06.msp") 
-
-## set path to -- GENERALLY DO NOT NEED TO MODIFY
-options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe
-options(patRoon.path.MetFragCL = 
-          paste(PatRoon.dir,"/MetFrag/MetFragCommandLine-2.5.0.jar", sep="")) # metfrag exe
-
+library(Rcpp)
 ###############################################################################
 ###############################################################################
 ## DO NOT MODIFIED BELOW JUST RUN THE CODE ####
-
 ##   ----  SCRIPT START HERE ----
 ################################################################################
 
@@ -130,17 +133,18 @@ creat.subDir <- function (mainDir,subDir)
 # ------------------------
 # Set outpath folder
 date <- Sys.Date()
-folder <- paste("/",date,"_NTA_patRoon", sep="")
+folder <- paste("/",date,"_SuspAnal_patRoon", sep="")
 outpath <- creat.subDir(paste(workPath,"/output",sep=""), folder)
 inpath <- paste(workPath,"input",sep="")
 
 setwd(workPath) # set directory
 
 #load suspect list
-dat <- read.csv(fns, header=TRUE) #open suspect list
+dat <- read.csv(f.susp.list, header=TRUE) #open suspect list
+d.target
 
 # creat a formula element list if form.search
-if (form.search==TRUE)
+if (form.search)
   {
     all_formulas <- paste(dat$FORMULA, collapse = "") # Extract and concatenate all formulas
     elements <- sort( unique(unlist(regmatches(all_formulas, gregexpr("[A-Z][a-z]?", all_formulas)))) ) # Extract unique element
@@ -149,24 +153,91 @@ if (form.search==TRUE)
     
     filtered_list <- na.omit(form.ele[form.ele %in% elements]) #re-filter based on selected element
     form.ele <- paste(filtered_list, collapse = "") 
-  }else{}
+  }
 
-# generate Metfrag database
-# make customized compound database for MetFrag bases on suspect list
-db <- data.frame(
-      identifier = dat$ID,
-      formula = dat$FORMULA,
-      SMILES = dat$SMILES,
-      InChIKey = dat$INCHIKEY,
-      stringsAsFactors = FALSE)
+if (custom.metfrag) # generate kustome Metfrag database
+    { # make customized compound database for MetFrag bases on suspect list
+      db <- data.frame(
+            identifier = dat$ID,
+            formula = dat$FORMULA,
+            SMILES = dat$SMILES,
+            InChIKey = dat$INCHIKEY,
+            stringsAsFactors = FALSE)
+      
+      # Remove empty or all-NA columns
+      db <- db[, colSums(is.na(db) | db == "") < nrow(db), drop = FALSE]
+      
+      # Write to CSV
+      write.csv(db, file = paste(outpath,"/custom_metfrag_db.csv",sep=""), row.names = FALSE, quote = TRUE)
+    }
+################################################################################
+## load MS2 library
+###################
+# 
+# check if compilated version exist
+check.dir <- length(list.dirs(paste(PatRoon.dir, "/MS2_library",sep=""),recursive = FALSE ))==0
 
-# Remove empty or all-NA columns
-db <- db[, colSums(is.na(db) | db == "") < nrow(db), drop = FALSE]
+if (check.dir){
+  print("COMPIL MS2 is running..")
+    
+  for (k in 1:length(MS2.lib))
+  {
+    if (k==1) {
+      mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp")
 
-# Write to CSV
-write.csv(db, file = paste(outpath,"/custom_metfrag_db.csv",sep=""), row.names = FALSE, quote = TRUE)
+    }else{
+      mslibraryM <- append(mslibraryM,
+                           list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
+    }
+  }
 
+  if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)} else {}
+
+  folder <- paste("/","compil_MS2lib", sep="")
+  compil.lib.path <- creat.subDir(paste(PatRoon.dir,"/MS2_library",sep=""), folder)
+
+  patRoon::export(mslibraryM, type="msp",
+                  out = paste(compil.lib.path,"/",date,"_compil_MS2lib.msp",sep="") )
+
+  saveRDS(MS2.lib, file=paste(compil.lib.path,"/","MS2.lib.rds",sep="") )
+
+} else {
+
+  # check if the compil we have all MS2.lib
+
+  old.MS2.lib <- readRDS(file=paste(compil.lib.path,"/","MS2.lib.rds",sep=""))
+
+  lib.changed <- !identical(old.MS2.lib, MS2.lib)
+
+  if(lib.changed){ #compil again
+    print("litt as been changed COMPIL MS2 is running..")
+
+    for (k in 1:length(MS2.lib))
+    {
+      if (k==1) {
+        mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp")
+
+      }else{
+        mslibraryM <- append(mslibraryM,
+                             list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
+      }
+    }
+
+    if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)} else {}
+
+    folder <- paste("/","compil_MS2lib", sep="")
+    #compil.lib.path <- creat.subDir(paste(PatRoon.dir,"/MS2_library",sep=""), folder)
+
+    patRoon::export(mslibraryM, type="msp",
+                    out = paste(compil.lib.path,"/",date,"_compil_MS2lib.msp",sep="") )
+
+    saveRDS(MS2.lib, file=paste(compil.lib.path,"/","MS2.lib.rds",sep="") )
+  }
+}
+
+###############################
 # save parameter of the script
+###############################
 f.info <- paste(outpath,"/AA_INFO_RUN_README.txt",sep="")
 cat( paste("*** patRoon parameter for the run....", Sys.Date()), 
      file= f.info, append=TRUE, sep="\n")
@@ -176,10 +247,10 @@ cat( paste("Scriptname: ", script.name,sep=""),
      file= f.info, append=TRUE,sep="\n")
 cat( paste("SampleList: ", workPath,"/input/",sample.list,sep=""), 
      file= f.info, append=TRUE,sep="\n")
-if (check.istd =="YES"){
+if (check.istd){
   cat( paste("ISTDList: ", workPath,"/input/",istd.list,sep=""), 
        file= f.info, append=TRUE,sep="\n")
-}else{}
+  }
 cat( "Peak-picking parameter", 
      file= f.info, append=TRUE, sep="\n")
 cat( "#########################################################", 
@@ -210,36 +281,31 @@ cat( paste("maxReplicateIntRSD:", max.Rep.RSD),
 cat( paste("blankThreshold:", bk.sa.thr), file= f.info, append=TRUE,sep="\n")
 cat( paste("Retention time range (s):", RT.range[1], "to",RT.range[2] ),
      file= f.info, append=TRUE,sep="\n")
-if (MD.filter =="YES"){
-  cat("Used suspect list Mass defect filtering ",
+if (MD.filter){
+  cat("Used suspect list Mass Defect filtering ",
     file= f.info,append=TRUE, sep="\n")
     }
 cat( "Annotation setting", 
      file= f.info, append=TRUE, sep="\n")
 cat( "#########################################################", 
      file= f.info, append=TRUE,sep="\n")
+if (custom.metfrag){
+  cat( "MetFrag list: custom_metfrag_db.csv", file= f.info, append=TRUE,sep="\n")
+}else{
+  cat( "MetFrag list: Pubchem", file= f.info, append=TRUE,sep="\n")
+}
 cat( paste("adduct:", adduct), file= f.info, append=TRUE,sep="\n")
 cat( paste("formula search:", form.search), file= f.info, append=TRUE,sep="\n")
-cat( paste("formula:", form.ele), file= f.info, append=TRUE,sep="\n")
+if (form.search)
+  {cat( paste("formula:", form.ele), file= f.info, append=TRUE,sep="\n")}
 cat( paste("ppm error:", ppm.error), file= f.info, append=TRUE,sep="\n")
-cat( paste("suspect list:", fns), file= f.info, append=TRUE,sep="\n")
+cat( paste("suspect list:", f.susp.list), file= f.info, append=TRUE,sep="\n")
 cat( paste("MS2 library:", MS2.lib), file= f.info, append=TRUE,sep="\n")
-cat( "MetFrag list: custom_metfrag_db.csv", file= f.info, append=TRUE,sep="\n")
-#cat( "MetFrag list: Pubchem", file= f.info, append=TRUE,sep="\n")
-cat( paste("Pubchem para search:",pubchem.search), file= f.info, append=TRUE,sep="\n")
 
-## load MS2 library
-for (k in 1:length(MS2.lib))
-{
-  if (k==1) {
-    mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") 
-  }else{
-    mslibraryM <- append(mslibraryM, 
-                         list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
-  }
+if (pubchem.search){
+  cat( "Pubchem post annotation is done to search Kow", file= f.info, append=TRUE,sep="\n")
 }
 
-if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)} else {}
 
 
 ## load data info
@@ -263,11 +329,12 @@ if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FA
 ### from patRoon
 # get analysis information for example data, which can be used directly for feature detection
 anaInfo <-cbind(patRoonData::exampleAnalysisInfo("positive")[, c("analysis", "replicate", "blank", "path_centroid")],
-                mode="pos")
+                mode="pos",
+                sampletype=c("BK","BK","BK","SA","SA","SA") )
 
-anaInfo <- rbind(anaInfo,
-                 cbind(patRoonData::exampleAnalysisInfo("negative")[, c("analysis", "replicate", "blank", "path_centroid")],
-                       mode="neg") )
+# anaInfo <- rbind(anaInfo,
+#                  cbind(patRoonData::exampleAnalysisInfo("negative")[, c("analysis", "replicate", "blank", "path_centroid")],
+#                        mode="neg") )
 
 ################
 # -------------------------
@@ -307,7 +374,7 @@ if (has_pos && has_neg) {
     fList <- makeSet(fListPos, adducts =  adduct)
   } else if (has_neg) {
     fList <- makeSet(fListNeg, adducts =  adduct)
-}
+  }
 
 # performed RT alignement and group feature
 fGroups <- groupFeatures(fList, "xcms3")
@@ -317,23 +384,22 @@ feat.summ <-data.frame(nb.all_grp.feat =nrow(df.fGroups))
 if (has_pos) {
   feat.summ <-data.frame(c(feat.summ, nb.pos_grp.feat =sum(!is.na(df.fGroups$`adduct-positive`)) ) ) }
 if (has_neg) {
-  feat.summ <-data.frame(c(feat.summ, nb.pos_grp.feat =sum(!is.na(df.fGroups$`adduct-negative`)) ) ) }
+  feat.summ <-data.frame(c(feat.summ, nb.neg_grp.feat =sum(!is.na(df.fGroups$`adduct-negative`)) ) ) }
 
 # Basic rule based filtering
 fGroups <- patRoon::filter(fGroups,  
-                              absMinIntensity = min.intensity.thr, 
-                              relMinReplicateAbundance = rp.feature,
-                              maxReplicateIntRSD =max.Rep.RSD,
-                              blankThreshold = bk.sa.thr, removeBlanks = TRUE,
-                              retentionRange = RT.range, mzRange = NULL)
+                          absMinIntensity = min.intensity.thr, 
+                          relMinReplicateAbundance = rp.feature,
+                          maxReplicateIntRSD =max.Rep.RSD,
+                          blankThreshold = bk.sa.thr, removeBlanks = TRUE,
+                          retentionRange = RT.range, mzRange = NULL)
 
 if (MD.filter==TRUE) # Mass defect filtration
     {
       MD <- dat$MONOISOTOPIC_MASS-floor(dat$MONOISOTOPIC_MASS) # to follow patRoon def of mass defect.
-      fGroupsPos <- patRoon::filter(fGroupsPos, mzDefectRange = c(min(MD),max(MD)),
+      fGroups <- patRoon::filter(fGroups, mzDefectRange = c(min(MD),max(MD)),
                                     negate = TRUE)
     }
-
 # -------------------------
 # reporting
 # -------------------------
@@ -358,24 +424,11 @@ write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""
 # Annotation 
 # -------------------------
 ## to speed up keep on sample here....
-# SA.group <- unique(df$group[df$sampletype=="SA"])
-# fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
+SA.group <- unique(df$group[df$sampletype=="SA"])
+fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
 
 # Retrieve MS peak lists 
-#avgPListParams <- getDefAvgPListParams(clusterMzWindow = 0.002)
 mslists <- generateMSPeakLists(fGroups) 
-#                                 , "mzr", 
-#                                maxMSRtWindow = 5, 
-#                                precursorMzWindow = 4,
-#                                avgFeatParams = avgPListParams, 
-#                                avgFGroupParams = avgPListParams)
-
-# Rule based filtering of MS peak lists.
-# mslists <- patRoon::filter(mslists, 
-#                            withMSMS = TRUE, absMSIntThr = NULL, 
-#                             absMSMSIntThr = NULL, relMSIntThr = NULL, 
-#                             relMSMSIntThr = 0.05,
-#                             topMSPeaks = NULL, topMSMSPeaks = 25)
 
 # get info for groupfeature which one as MS2
 df.mslists <- as.data.table(mslists)
@@ -409,27 +462,30 @@ suspects <- data.frame(name = dat$ID,
                        stringsAsFactors = FALSE) 
 
 fGroupsSusp <- screenSuspects(fGroups, suspects, 
-                              mzWindow = 0.005,
+                              mzWindow = 0.010,
                               onlyHits = TRUE) 
 if (form.search==TRUE) { 
 
-  formulas <- generateFormulasGenForm(fGroupsSusp, mslists,
+  formulas <- generateFormulasGenForm(fGroupsSusp, 
+                                      mslists,
                                     elements = form.ele,
-                                   relMzDev = ppm.error,
-                                  absAlignMzDev = 0.002,
-                                 topMost = 10,
-                                calculateFeatures = FALSE,
-                               featThresholdAnn = 1,
-                              MSMode ="both")
+                                    relMzDev = ppm.error,
+                                    absAlignMzDev = 0.005,
+                                    topMost = 10,
+                                    calculateFeatures = FALSE,
+                                    featThresholdAnn = 0,
+                                    MSMode ="both")
   }else {}
 
 ## MetFrag -----
 ################
-options(patRoon.path.MetFragPubChemLite = paste(outpath,"/custom_metfrag_db.csv",sep="") )
+if (custom.metfrag){
+      options(patRoon.path.MetFragPubChemLite = paste(outpath,"/custom_metfrag_db.csv",sep="") ) 
+      MF.database= "pubchemlite"}else{ MF.database= "pubchem"}
 
 # Calculate compound structure candidates
 compsMF <- generateCompounds(
-              fGroupsSusp, mslists,
+            fGroupsSusp, mslists,
               "metfrag",
               method = "CL",
               timeout = 300,
@@ -439,68 +495,50 @@ compsMF <- generateCompounds(
               topMost = 100,
               dbRelMzDev = ppm.error ,
               fragRelMzDev = 5,
-              fragAbsMzDev = 0.002,
-              database = "pubchemlite",
-              setThresholdAnn = 1,
-              scoreTypes = c("individualMoNAScore", "fragScore", "score"),
-              scoreWeights = 1)
+              fragAbsMzDev = 0.001,
+              database = MF.database,
+              setThresholdAnn =0)
 
-# Summary of MetFrag Results in a a Single Table
-# MFsummary <- as.data.table(compounds)
-# outputSummary <- paste(outpath, "MFsummary.csv", sep = "/")
-# write.csv(MFsummary, outputSummary)
+df.fGroupsSusp_MF <-as.data.table(fGroupsSusp_MF, average = TRUE, areas = TRUE,
+                                  collapseSuspects = NULL,
+                                  onlyHits = TRUE)
 
 # Annotation with the Library MS2 algorithm
 #########################################
 compsLib <- generateCompounds(fGroups, mslists, "library", 
-                              MSLibrary = mslibraryM, minSim = 0.4)
+                              MSLibrary = mslibraryM, minSim = 0.2)
 # -------------------------
 # Final Annotation 
 # -------------------------
 
-if (form.search==TRUE) { 
+if (form.search) { 
 
-fGroupsSusp_MF <- estimateIDConfidence(
-                    fGroupsSusp,
+fGroupsSusp_MF <- estimateIDConfidence(fGroupsSusp,
+                                         MSPeakLists = mslists,
+                                         formulas = formulas,
+                                         compounds = compsMF)#
+
+df.fGroupsSusp_MF <-as.data.table(fGroupsSusp_MF, average = TRUE, areas = TRUE,
+                                  collapseSuspects = NULL,
+                                  onlyHits = TRUE)
+
+fGroupsSusp_Lib <- estimateIDConfidence(fGroupsSusp,
                     MSPeakLists = mslists,
                     formulas = formulas,
-                    compounds = compsMF,
-                    absMzDev = 0.005,
-                    #specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
-                    checkFragments = c("mz", "formula", "compound"),
-                    formulasNormalizeScores = "max",
-                    compoundsNormalizeScores = "max") #
+                    compounds = compsLib)
 
-fGroupsSusp_Lib <- annotateSuspects(
-                    fGroupsSusp,
-                    MSPeakLists = mslists,
-                    formulas = formulas,
-                    compounds = compsLib,
-                    absMzDev = 0.005,
-                    #specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
-                    checkFragments = c("mz", "formula", "compound"),
-                    formulasNormalizeScores = "max",
-                    compoundsNormalizeScores = "max")
+df.fGroupsSusp_Lib <-as.data.table(fGroupsSusp_Lib, average = TRUE, areas = TRUE,
+                                  collapseSuspects = NULL,
+                                  onlyHits = TRUE)
+
 }else{
-  fGroupsSusp_MF <- estimateIDConfidence(
-                    fGroupsSusp,
+  fGroupsSusp_MF <- estimateIDConfidence(fGroupsSusp,
                     MSPeakLists = mslists,
-                    compounds = compsMF,
-                    absMzDev = 0.005,
-                    # specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
-                    checkFragments = c("mz", "formula","compound"),
-                    formulasNormalizeScores = "max",
-                    compoundsNormalizeScores = "max") #
+                    compounds = compsMF)
   
-  fGroupsSusp_Lib <- estimateIDConfidence(
-                      fGroupsSusp,
+  fGroupsSusp_Lib <- estimateIDConfidence(fGroupsSusp,
                       MSPeakLists = mslists,
-                      compounds = compsLib,
-                      absMzDev = 0.005,
-                      # specSimParams = getDefSpecSimParams(removePrecursor = TRUE),
-                      checkFragments = c("mz", "formula", "compound"),
-                      formulasNormalizeScores = "max",
-                      compoundsNormalizeScores = "max")
+                      compounds = compsLib)
 }
 
 # Take the highest Level conf. between MF and Lib
@@ -551,7 +589,7 @@ if (has_pos) {
 if (has_neg) {
   feat.summ <-data.frame(c(feat.summ, nb.neg.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-negative`)) ) ) }
 
-feat.summ <-data.frame(c(feat.summ, nb.Annot.MS2 =nrow(df.fGroupsSusp) )) 
+feat.summ <-data.frame(c(feat.summ, nb.Annot =nrow(df.fGroupsSusp) )) 
 if (has_pos) {
   feat.summ <-data.frame(c(feat.summ, nb.pos.Annot =sum(!is.na(df.fGroupsSusp$`adduct-positive`)) ) ) }
 if (has_neg) {
@@ -559,76 +597,99 @@ if (has_neg) {
 
 if (pubchem.search==TRUE){
   
-  # get chemical names based on InChIKey
-  # check if present in pubchem
-  dmol <-NULL
-  for (i in 1:nrow(df.fGroupsSusp) )
-  {
-    get.id <- df.fGroupsSusp$susp_InChIKey[i]
-    
-    fcid <- try ( get_cid(get.id, from =  'inchikey', match='first', verbose = TRUE, arg = NULL) , silent = TRUE )
-    
-    # if present in pubchem get
-    if ( length(fcid$cid)==2 | fcid$cid==0 | is.na(fcid$cid) )  { 
-      dmol <- rbind(dmol, c(CID=NA, IUPACName=NA,XLogP=NA, CAS=NA))
-    }else{
-      # data properties from pubchem
-      prop <- pc_prop(fcid$cid, properties =  c('IUPACName','XLogP')
-                      , verbose = TRUE)
-      cas <- cir_query(fcid$query, representation = "cas", 
-                       match = "first")
+    dmol <- NULL
+    for (i in seq_len(nrow(df.fGroupsSusp))) {
+      get.id <- df.fGroupsSusp$susp_InChIKey[i]
       
-      # check length of prop 
-      if (length(prop)==3){dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=prop$IUPACName, XLogP=prop$XLogP, CAS= cas$cas) )
-      }else{  if (all(names(prop) == c("CID","XLogP") ))
-      { dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=NA , XLogP=prop$XLogP, CAS=cas$cas) )
-      }else{ dmol <- rbind(dmol,c(CID=prop$CID, IUPACName=prop$IUPACName,XLogP=NA,CAS=cas$cas) ) }
+      message(sprintf("Processing %d/%d : %s",
+                      i, nrow(df.fGroupsSusp), get.id))
+      #------------------------------
+      # Get CID
+      #------------------------------
+      fcid <- tryCatch(
+        get_cid(get.id, from = "inchikey", match = "first"),
+        error = function(e) {
+          Sys.sleep(5)
+          tryCatch(
+            get_cid(get.id, from = "inchikey", match = "first"),
+            error = function(e) NULL
+              ) } )
+      
+      # Skip if CID retrieval failed
+      if (is.null(fcid) ||
+          is.null(fcid$cid) ||
+          length(fcid$cid) != 1 ||
+          fcid$cid == 0 ||
+          is.na(fcid$cid)) {
+        
+        dmol <- rbind(dmol,
+                      data.frame(CID = NA,
+                                 IUPACName = NA,
+                                 XLogP = NA,
+                                 CAS = NA))
+        next
       }
+      
+      #------------------------------
+      # Get properties
+      #------------------------------
+      prop <- tryCatch(
+        pc_prop(fcid$cid,
+                properties = c("IUPACName", "XLogP"),
+                verbose = TRUE),
+        error = function(e) {
+          message(sprintf(
+            "ERROR: pc_prop failed for CID %s (%s)",
+            fcid$cid, e$message))
+          NULL
+        }
+      )
+      
+      #------------------------------
+      # Get CAS
+      #------------------------------
+      cas <- tryCatch(
+        cir_query(fcid$query,
+                  representation = "cas",
+                  match = "first"),
+        error = function(e) {
+          message(sprintf(
+            "ERROR: CAS lookup failed for %s (%s)",
+            get.id, e$message))
+          NULL
+        }
+      )
+      
+      # If property retrieval failed
+      if (is.null(prop)) {
+        dmol <- rbind(dmol,
+                      data.frame(CID = fcid$cid,
+                                 IUPACName = NA,
+                                 XLogP = NA,
+                                 CAS = if (!is.null(cas)) cas$cas else NA))
+        next
+      }
+      
+      dmol <- rbind(
+        dmol,
+        data.frame(
+          CID = if ("CID" %in% names(prop)) prop$CID else NA,
+          IUPACName = if ("IUPACName" %in% names(prop)) prop$IUPACName else NA,
+          XLogP = if ("XLogP" %in% names(prop)) prop$XLogP else NA,
+          CAS = if (!is.null(cas) && "cas" %in% names(cas)) cas$cas else NA
+        )
+      )
     }
-  } 
-  df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol )
-  
-  write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
-              append = FALSE, quote = FALSE, sep = "\t",
-              row.names = FALSE,col.names = TRUE )
-  
-  # create a working table for sample only 
-  df.fGroupsSusp <- data.frame(df.fGroupsSusp)
-  names(df.fGroupsSusp) <- sub("^X", "", names(df.fGroupsSusp)) # rename if name start by X -- 
-  data <- df.fGroupsSusp[ ,names(df.fGroupsSusp) %in% unique(df$group[df$sampletype=="SA"]) ]
-  
-  # select minimal info
-  df.data <- cbind(data.frame(cbind(group= df.fGroupsSusp$group,
-                                    ret= as.numeric(df.fGroupsSusp$ret),
-                                    mz= as.numeric(df.fGroupsSusp$mz),
-                                    InChIKey=df.fGroupsSusp$susp_InChIKey,
-                                    estIDLevel=df.fGroupsSusp$susp_estIDLevel,
-                                    IUPACName=df.fGroupsSusp$IUPACName,
-                                    LogP= as.numeric(df.fGroupsSusp$LogP),
-                                    CAS=df.fGroupsSusp$CAS )), data)
-  
-  # final check if all value = zero 
-  if (ncol(df.data)==9){
-    df.data <- df.data[df.data[,9]!=0,]
-  }else{
-    index <- rowSums( df.data[,9:ncol(df.data)]) >0 
-    df.data <- df.data[index,]
+    df.fGroupsSusp <- cbind(df.fGroupsSusp,dmol )
   }
-  
-  write.table(df.data, file=paste(outpath, "/SuspectScreening_sample.txt", sep=""),
-              append = FALSE, quote = FALSE, sep = "\t",
-              row.names = FALSE,col.names = TRUE )
-}else{
-  
-  df.fGroupsSusp <- df.fGroupsSusp %>%
-    left_join(df.mslists, by = "group") %>%
-    mutate(type = coalesce(type, "MS"))
-  
-  write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
-              append = FALSE, quote = FALSE, sep = "\t",
-              row.names = FALSE,col.names = TRUE )
-  
-}
+
+df.fGroupsSusp <- df.fGroupsSusp %>%
+  left_join(df.mslists, by = "group") %>%
+  mutate(type = coalesce(type, "MS"))
+
+write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
+            append = FALSE, quote = FALSE, sep = "\t",
+            row.names = FALSE,col.names = TRUE )
 
 ## save feat.summ
 feat.summ <- stack(feat.summ)
@@ -637,7 +698,5 @@ write.table(feat.summ, file=paste(outpath, "/feature_annotation_summary.txt", se
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
 
-save.image(file=paste(outpath,'/',date,'_suspect_NTA_session_DDA.RData',sep="") )
-
-
+## save.image(file=paste(outpath,'/',date,'_suspect_anal_session.RData',sep="") )
 
