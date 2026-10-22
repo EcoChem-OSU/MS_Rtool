@@ -28,7 +28,7 @@
 ####################################################################
 wifftype <- ".wiff2" # could set ".wiff" or ".wiff2"
 outtype <- ".mzML" #set mzML or mzXML
-workdir <- "R:/Boris Droz/Proj_FORENSICSPFAS/data_/2026-09-14_2source_CWS_SQ/wiff_files/neg/"
+workdir <- "E:/FORENSICSPFAS_2024/neg/"
 
 # workdir <- "D:/Patroon_NTS/RIL"
 setwd(workdir)
@@ -196,4 +196,28 @@ if (length(fns.wiff)==0)
   file.rename( from= old.fns, to= new.fns)
 }
 
-  
+################################################################################
+## Opt4. first get name on the  mzxml into a table
+## ..., and then rename it on a table in a"new_names" column
+################################################################################
+################################################################################
+
+df.fn.names <- data.frame(cbind(mzxml_name= sapply(strsplit(fns.mzxml,"[.]"),"[",1) ))
+
+# save it and change what you whant in excel or other
+write.csv(df.fn.names,"new_sample_namelist.csv",row.names = FALSE)
+###############################################################################
+###############################################################################
+# modify all filename according to a created "new_names" column
+###############################################################
+#### DONT put any extension file on the new name list #########
+###############################################################
+df.filename <- read.csv("new_sample_namelist.csv",header=TRUE,colClasses = c("character")); head(df.filename)
+
+## rename the mzXML files
+old.fns <- paste(f.fns.mzxml, paste(df.filename$mzxml_name,outtype, sep=""), sep="" )
+new.fns <- paste(f.fns.mzxml, paste(df.filename$new_names,
+                                    outtype,sep=""), sep="" ) 
+
+file.rename( from= old.fns, to= new.fns)
+

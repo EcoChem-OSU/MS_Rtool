@@ -49,10 +49,10 @@ opt.ppm.neg = 10
 opt.pw.neg = c(5, 15) # peak width min and max for neg
 
 ## Parameter for filtering check patroon  help(filter) - NULL to remove filter
-min.intensity.thr = NULL # remove features <intensity, typical range between 100 - 1000
-rp.feature = NULL # 1= features should be in all analysis of replicate groups
-max.Rep.RSD = NULL # remove features with intensity RSD in replicates >ratio - 0.75 good cutoff
-bk.sa.thr = NULL # remove features <x intensity of (average) blank intensity - never go under 3
+min.intensity.thr = 200 # remove features <intensity, typical range between 100 - 1000
+rp.feature = 1 # 1= features should be in all analysis of replicate groups
+max.Rep.RSD = 0.75 # remove features with intensity RSD in replicates >ratio - 0.75 good cutoff
+bk.sa.thr = 3 # remove features <x intensity of (average) blank intensity - never go under 3
 RT.range = c(0, Inf) #in sec 0 Inf to not select
 
 # Mass defect filtering - option are TRUE or FALSE
@@ -61,7 +61,7 @@ MD.filter <- FALSE # used the suspect list to mass filtering.
 ## Adduct and formula search parameter
 custom.metfrag <-TRUE #generate custom metfrag 
 adduct <- c("[M+H]+") #,"[M-H]-")
-form.search <- FALSE #search formula is very long sometimes not necessary 
+form.search <- TRUE #search formula is very long sometimes not necessary 
 form.ele <- "CHNOPSClFBr" #  NO Necessary NEED to modify it -- been re-filter based on you suspect list
 ppm.error <- 10 ## qtof typically 5-10 - check you QA/QC to define if smaller
 
@@ -78,8 +78,6 @@ PatRoon.dir <- "D:/patRoon_NTS/library/"
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
 f.susp.list <- paste(PatRoon.dir,"/suspect_list/pos_susdat_2024-01-12-082351_ed.csv",sep="")
 f.target.list <- paste(PatRoon.dir,"/suspect_list/", sep="")
-
-MS2.lib <- list.files(paste(PatRoon.dir, "/MS2_library",sep=""),pattern= "msp" )#load all library contained here...
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
 options(patRoon.path.obabel = "C:/Program Files/OpenBabel-3.1.1/") # open babel exe
@@ -141,7 +139,7 @@ setwd(workPath) # set directory
 
 #load suspect list
 dat <- read.csv(f.susp.list, header=TRUE) #open suspect list
-d.target
+# d.target
 
 # creat a formula element list if form.search
 if (form.search)
@@ -173,31 +171,55 @@ if (custom.metfrag) # generate kustome Metfrag database
 ################################################################################
 ## load MS2 library
 ###################
-# 
+MS2.lib <- list.files(paste(PatRoon.dir, "/MS2_library",sep=""),pattern= "msp" )#load all library contained here... 
 # check if compilated version exist
 check.dir <- length(list.dirs(paste(PatRoon.dir, "/MS2_library",sep=""),recursive = FALSE ))==0
 
 if (check.dir){
-  print("COMPIL MS2 is running..")
+ cat("COMPIL MS2 library is running...")
+  
+  lib.summary <- data.frame(Library = character(),N_Spectra = integer(),  stringsAsFactors = FALSE)
     
   for (k in 1:length(MS2.lib))
-  {
-    if (k==1) {
-      mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp")
-
-    }else{
-      mslibraryM <- append(mslibraryM,
-                           list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
+    {
+    lib <- loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp")
+    
+    lib.summary <- rbind(lib.summary,
+                    data.frame( Library = basename(MS2.lib[k]),
+                                N_Spectra = length(lib), # count spectra
+                                stringsAsFactors = FALSE) )
+  #   if (k==1) {
+  #     mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp")
+  # 
+  #   }else{
+  #     mslibraryM <- append(mslibraryM,
+  #                          list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
+  #   }
+  # }
+  
+  if (k == 1) { mslibraryM <- lib
+      } else {
+        mslibraryM <- append(mslibraryM, list(lib))
+      }
     }
-  }
 
   if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)} else {}
+  
+  # total
+  lib.summary <- rbind(lib.summary,
+              data.frame(Library = "TOTAL compiled spectra",
+                        N_Spectra = length(mslibraryM),
+                      stringsAsFactors = FALSE) )
 
   folder <- paste("/","compil_MS2lib", sep="")
   compil.lib.path <- creat.subDir(paste(PatRoon.dir,"/MS2_library",sep=""), folder)
 
   patRoon::export(mslibraryM, type="msp",
                   out = paste(compil.lib.path,"/",date,"_compil_MS2lib.msp",sep="") )
+  
+  write.csv( lib.summary,
+            file = paste(compil.lib.path, "/MS2_library_summary.csv", sep = ""),
+          row.names = FALSE )
 
   saveRDS(MS2.lib, file=paste(compil.lib.path,"/","MS2.lib.rds",sep="") )
 
@@ -210,29 +232,52 @@ if (check.dir){
   lib.changed <- !identical(old.MS2.lib, MS2.lib)
 
   if(lib.changed){ #compil again
-    print("litt as been changed COMPIL MS2 is running..")
+    cat("Library as been changed COMPIL MS2 is running again...")
+    
+    lib.summary <- data.frame(Library = character(),N_Spectra = integer(),  stringsAsFactors = FALSE)
 
     for (k in 1:length(MS2.lib))
     {
-      if (k==1) {
-        mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp")
-
-      }else{
-        mslibraryM <- append(mslibraryM,
-                             list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
-      }
+      lib <- loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp")
+      
+      lib.summary <- rbind(lib.summary,
+                           data.frame( Library = basename(MS2.lib[k]),
+                                       N_Spectra = length(lib), # count spectra
+                                       stringsAsFactors = FALSE)  )
+      # if (k==1) {
+      #   mslibraryM <- loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp")
+      # 
+      # }else{
+      #   mslibraryM <- append(mslibraryM,
+      #                        list(loadMSLibrary(paste(PatRoon.dir,"/MS2_library/",MS2.lib[k] , sep=""), "msp") ))
+      # }
+      
+      if (k == 1) { mslibraryM <- lib
+                } else {
+                  mslibraryM <- append(mslibraryM, list(lib))
+                }
     }
 
     if (length(MS2.lib)>1) {mslibraryM <- Reduce(function(x, y) merge(x, y, all = FALSE), mslibraryM)} else {}
+    
+    # total
+    lib.summary <- rbind(lib.summary,
+                         data.frame(Library = "TOTAL compiled spectra",
+                                    N_Spectra = length(mslibraryM),
+                                    stringsAsFactors = FALSE)  )
 
     folder <- paste("/","compil_MS2lib", sep="")
     #compil.lib.path <- creat.subDir(paste(PatRoon.dir,"/MS2_library",sep=""), folder)
 
     patRoon::export(mslibraryM, type="msp",
                     out = paste(compil.lib.path,"/",date,"_compil_MS2lib.msp",sep="") )
+    
+    write.csv( lib.summary,
+               file = paste(compil.lib.path, "/MS2_library_summary.csv", sep = ""),
+               row.names = FALSE )
 
     saveRDS(MS2.lib, file=paste(compil.lib.path,"/","MS2.lib.rds",sep="") )
-  }
+  }else{MS2.lib <-old.MS2.lib}
 }
 
 ###############################
@@ -328,9 +373,11 @@ if (pubchem.search){
 
 ### from patRoon
 # get analysis information for example data, which can be used directly for feature detection
-anaInfo <-cbind(patRoonData::exampleAnalysisInfo("positive")[, c("analysis", "replicate", "blank", "path_centroid")],
+df <-cbind(patRoonData::exampleAnalysisInfo("positive")[, c("analysis", "replicate", "blank", "path_centroid")],
                 mode="pos",
                 sampletype=c("BK","BK","BK","SA","SA","SA") )
+
+anaInfo <- df
 
 # anaInfo <- rbind(anaInfo,
 #                  cbind(patRoonData::exampleAnalysisInfo("negative")[, c("analysis", "replicate", "blank", "path_centroid")],
@@ -424,8 +471,8 @@ write.table(df.fGroups, file=paste(outpath,"/featureGroups_averaged.txt", sep=""
 # Annotation 
 # -------------------------
 ## to speed up keep on sample here....
-SA.group <- unique(df$group[df$sampletype=="SA"])
-fGroups <- patRoon::filter(fGroups, rGroups = SA.group)
+SA.group <- unique(df$replicate[df$sampletype=="SA"])
+fGroups <- patRoon::filter(fGroups, replicate = SA.group)
 
 # Retrieve MS peak lists 
 mslists <- generateMSPeakLists(fGroups) 
@@ -499,9 +546,9 @@ compsMF <- generateCompounds(
               database = MF.database,
               setThresholdAnn =0)
 
-df.fGroupsSusp_MF <-as.data.table(fGroupsSusp_MF, average = TRUE, areas = TRUE,
-                                  collapseSuspects = NULL,
-                                  onlyHits = TRUE)
+# df.fGroupsSusp_MF <-as.data.table(fGroupsSusp_MF, average = TRUE, areas = TRUE,
+#                                   collapseSuspects = NULL,
+#                                   onlyHits = TRUE)
 
 # Annotation with the Library MS2 algorithm
 #########################################
@@ -581,19 +628,6 @@ df.fGroupsSusp$Source <- ifelse(fully_identical & !max_conf, "", paste(df.fGroup
 # Keep only the unique rows based on ID, keeping the highest value
 df.fGroupsSusp <- df.fGroupsSusp[max_conf, ]
 
-## Annotation summary
-MS2.annot <- df.fGroupsSusp[df.fGroupsSusp$type=="MSMS",]
-feat.summ <-data.frame(c(feat.summ, nb.Annot.MS2 =nrow(MS2.annot) )) 
-if (has_pos) {
-  feat.summ <-data.frame(c(feat.summ, nb.pos.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-positive`)) ) ) }
-if (has_neg) {
-  feat.summ <-data.frame(c(feat.summ, nb.neg.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-negative`)) ) ) }
-
-feat.summ <-data.frame(c(feat.summ, nb.Annot =nrow(df.fGroupsSusp) )) 
-if (has_pos) {
-  feat.summ <-data.frame(c(feat.summ, nb.pos.Annot =sum(!is.na(df.fGroupsSusp$`adduct-positive`)) ) ) }
-if (has_neg) {
-  feat.summ <-data.frame(c(feat.summ, nb.neg.Annot =sum(!is.na(df.fGroupsSusp$`adduct-negative`)) ) ) }
 
 if (pubchem.search==TRUE){
   
@@ -686,6 +720,27 @@ if (pubchem.search==TRUE){
 df.fGroupsSusp <- df.fGroupsSusp %>%
   left_join(df.mslists, by = "group") %>%
   mutate(type = coalesce(type, "MS"))
+
+
+
+
+## Annotation summary
+MS2.annot <- df.fGroupsSusp[df.fGroupsSusp$type=="MSMS",]
+feat.summ <-data.frame(c(feat.summ, nb.Annot.MS2 =nrow(MS2.annot) )) 
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.neg.Annot.MS2 =sum(!is.na(MS2.annot$`adduct-negative`)) ) ) }
+
+feat.summ <-data.frame(c(feat.summ, nb.Annot =nrow(df.fGroupsSusp) )) 
+if (has_pos) {
+  feat.summ <-data.frame(c(feat.summ, nb.pos.Annot =sum(!is.na(df.fGroupsSusp$`adduct-positive`)) ) ) }
+if (has_neg) {
+  feat.summ <-data.frame(c(feat.summ, nb.neg.Annot =sum(!is.na(df.fGroupsSusp$`adduct-negative`)) ) ) }
+
+
+
+
 
 write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
