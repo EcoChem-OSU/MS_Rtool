@@ -28,7 +28,7 @@
 ####################################################################
 wifftype <- ".wiff2" # could set ".wiff" or ".wiff2"
 outtype <- ".mzML" #set mzML or mzXML
-workdir <- "E:/FORENSICSPFAS_2024/neg/"
+workdir <- "R:/Boris Droz/LuxWater_2019-2022/mzML/"
 
 # workdir <- "D:/Patroon_NTS/RIL"
 setwd(workdir)
@@ -219,5 +219,4 @@ old.fns <- paste(f.fns.mzxml, paste(df.filename$mzxml_name,outtype, sep=""), sep
 new.fns <- paste(f.fns.mzxml, paste(df.filename$new_names,
                                     outtype,sep=""), sep="" ) 
 
-file.rename( from= old.fns, to= new.fns)
-
+file.rename( from= old.fns, to= new.fns)  
