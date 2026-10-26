@@ -12,12 +12,14 @@
 ###############################################################################
 ## Description:
 ###############
-## Performed peak picking with different algorythm
+## Performed peak picking with different algorythm select algo but 
+## algo also defined depending on the file extentsion
 ## 
 ## Should have a input file with a raw, mzxml folder and the sample list (csv)
 ## need to create an empty output folder
-
-#### --- Warning some option are not available depending on the type of input file ---
+#################################################################################
+#### Warning some option are not available depending on the type of input file
+###################################
 # Algorythm	file types
 # bruker	Bruker‘.d’ files
 # openms	mzML
@@ -33,12 +35,22 @@
 ############
 ## path
 # workPath <- "D:/Patroon_NTS"
-workPath <- "E:/UKL_2023"
+workPath <- "E:/FORENSICSPFAS_2024/"
 
 ## Input data - 
-sample.list <- "20251024_sample_list_UKL2023_mzml.csv"
+sample.list <- "202610_sample_list_FORENSICSPFAS_neg_mzml.csv"
 
-in.fn.type <-"pos_mzML" ## just text to make the ouputfolder name
+in.fn.type <-"neg_mzML" ## just text to make the ouput folder name
+
+## Select algorythm
+###################
+openms <-TRUE
+xcms <- TRUE
+xcms3	<- TRUE
+envipick <- TRUE
+## sirius	not supported
+kpic2	<- TRUE
+## safd	not supported
 
 # ## Optimized parameters for peak picking
 ## --> current version used defaut parameter for each peak picking
@@ -50,7 +62,7 @@ rp.feature = 1 #relMinReplicateAbundance
 bk.sa.thr = 3 # blankThreshold - never go under 3
 
 ## Adduct and formula search parameter
-adduct <- "[M+H]+"
+adduct <- "[M-H]-"
                       
 ################################################################################
 ## load library -- DO NOT MODIFIED
@@ -161,6 +173,7 @@ feat.summ <-data.frame(NULL)
 # -------------------------
 #fListBRU <- findFeatures(anaInfo, "bruker")
 
+if (openms) {
 if (mzml) {
           # -------------------------
           # OpenMS
@@ -188,7 +201,9 @@ if (mzml) {
           
           feat.summ <-data.frame(c(feat.summ, nb_feature_OpenMS= nrow(df.fGroupsOMS))) 
           }
+        }
 
+if(xcms){
 if (mzml|mzxml) {
           # -------------------------
           # XCMS
@@ -216,7 +231,9 @@ if (mzml|mzxml) {
           
           feat.summ <-data.frame(c(feat.summ, nb_feature_XCMS= nrow(df.fGroupsXCMS))) 
         }
+      }
 
+if(xcms3){
 if (mzml|mzxml) {
         # -------------------------
         # XCMS3
@@ -244,7 +261,9 @@ if (mzml|mzxml) {
         
         feat.summ <-data.frame(c(feat.summ, nb_feature_XCMS3= nrow(df.fGroupsXCMS3))) 
         }
+    }
 
+if(envipick){
 if (mzxml) {
           # -------------------------
           # enviPick
@@ -271,7 +290,8 @@ if (mzxml) {
           
           feat.summ <-data.frame(c(feat.summ, nb_feature_enviPick= nrow(df.fGroupsEP))) 
         }
-# 
+      }
+  
 # if (mzml|mzxml) {
 #             # -------------------------
 #             # SIRIUS
@@ -301,6 +321,8 @@ if (mzxml) {
 #             feat.summ <-data.frame(c(feat.summ, nb_feature_SIRIUS= nrow(df.fGroupsSIRIUS)))
 #         }
 
+
+if(kpic2) {
 if (mzml|mzxml) {
             # -------------------------
             # KPIC2
@@ -326,7 +348,8 @@ if (mzml|mzxml) {
                         row.names = FALSE,col.names = TRUE )
             
             feat.summ <-data.frame(c(feat.summ, nb_feature_KPIC2= nrow(df.fGroupsKPIC2)))
-            }
+          }
+      }
 
 # if (mzxml) {
 #             # -------------------------

@@ -739,9 +739,6 @@ if (has_neg) {
   feat.summ <-data.frame(c(feat.summ, nb.neg.Annot =sum(!is.na(df.fGroupsSusp$`adduct-negative`)) ) ) }
 
 
-
-
-
 write.table(df.fGroupsSusp, file=paste(outpath, "/SuspectScreening_all.txt", sep=""),
             append = FALSE, quote = FALSE, sep = "\t",
             row.names = FALSE,col.names = TRUE )
