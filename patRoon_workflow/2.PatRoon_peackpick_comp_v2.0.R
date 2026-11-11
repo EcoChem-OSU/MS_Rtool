@@ -38,9 +38,9 @@
 workPath <- "E:/FORENSICSPFAS_2024/"
 
 ## Input data - 
-sample.list <- "202610_sample_list_FORENSICSPFAS_neg_mzml.csv"
+sample.list <- "202610_sample_list_FORENSICSPFAS_neg_mzxml.csv"
 
-in.fn.type <-"neg_mzML" ## just text to make the ouput folder name
+in.fn.type <-"neg_mzXML" ## just text to make the ouput folder name
 
 ## Select algorythm
 ###################
@@ -112,9 +112,9 @@ creat.subDir <- function (mainDir,subDir)
 # Set outpath folder
 date <- Sys.Date()
 inpath <- paste(workPath,"/input",sep="")
-proj <- sub(".*/", "", workPath)
+proj <- basename(gsub("[/\\\\]$", "", workPath))
 
-folder <- paste("/",date,"_peak_picking_comp_", proj,"_",in.fn.type,sep="")
+folder <- paste("/",date,"_peakpicking", proj,"_",in.fn.type,sep="")
 outpath <- creat.subDir(paste(workPath,"/output",sep=""), folder)
 #outpath <- paste(workPath,"/output",sep="")
 
