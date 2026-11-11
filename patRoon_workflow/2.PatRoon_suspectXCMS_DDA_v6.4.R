@@ -1,8 +1,8 @@
 ###############################################################################
 ## Title: PatRoon - suspect screening 
 ###############################################################################
-## version:6.3
-## Date: August 2026
+## version:6.4
+## Date: December 2026
 ## Author: Boris Droz 
 ## Modified from Tutorial and Handbook on https://github.com/rickhelmus/patRoon
 ## Depends:
@@ -27,7 +27,7 @@
 script.name <- "2.PatRoon_suspectXCMS_DDA_v6.3.R"
 ## path
 # workPath <- "D:/patRoon_NTS/BioCrab/"
-workPath <- "C:/Users/drozditb/Documents/OSU_data_analysis/patroon_test"
+workPath <- "C:/Users/Processing3/Documents/Patroon_NTS"
   
 ## Input data - 
 # sample.list <- "sample_list_midcal_mzML.csv"
@@ -71,10 +71,10 @@ pubchem.search <-FALSE # Kow and add para.search in pubchem - take time
 ## path -- generally set once and do not need to be change
 # PatRoon.directory -> where suspect, MS2, ... are
 #PatRoon.dir <- "D:/patRoon_NTS/library/"
-PatRoon.dir <- "C:/Users/drozditb/Documents/general_library/patRoon"
+PatRoon.dir <- "C:/Users/Processing3/Documents/Patroon_NTS/library"
 
 ## set suspect list, MS2 and Metfrag all located in PatRoon.dir
-f.susp.list <- paste(PatRoon.dir,"/suspect_list/pos_susdat_2024-01-12-082351_ed.csv",sep="")
+f.susp.list <- paste(PatRoon.dir,"/suspect_list/susdat_2024-01-12-082351_ed.csv",sep="")
 f.target.list <- paste(PatRoon.dir,"/suspect_list/", sep="")
 
 ## set path to -- GENERALLY DO NOT NEED TO MODIFY
