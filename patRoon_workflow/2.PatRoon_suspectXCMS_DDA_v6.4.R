@@ -181,13 +181,13 @@ if (check.dir){
     
   for (k in 1:length(MS2.lib))
     {
-    lib <- loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp")
+    lib <- withOpt(cache.mode = "none", {
+      loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp") } )
     
     lib.summary <- rbind(lib.summary,
                     data.frame( Library = basename(MS2.lib[k]),
                                 N_Spectra = length(lib), # count spectra
                                 stringsAsFactors = FALSE) )
-
   if (k == 1) { mslibraryM <- lib
       } else {
         mslibraryM <- append(mslibraryM, list(lib))
@@ -198,7 +198,7 @@ if (check.dir){
   
   # total
   lib.summary <- rbind(lib.summary,
-              data.frame(Library = "TOTAL compiled spectra",
+                      data.frame(Library = "TOTAL compiled spectra",
                         N_Spectra = length(mslibraryM),
                       stringsAsFactors = FALSE) )
 
@@ -217,7 +217,7 @@ if (check.dir){
 } else {
 
   # check if the compil we have all MS2.lib
-
+  compil.lib.path <- list.dirs(paste(PatRoon.dir, "/MS2_library",sep=""),recursive = FALSE )
   old.MS2.lib <- readRDS(file=paste(compil.lib.path,"/","MS2.lib.rds",sep=""))
 
   lib.changed <- !identical(old.MS2.lib, MS2.lib)
@@ -229,7 +229,10 @@ if (check.dir){
 
     for (k in 1:length(MS2.lib))
     {
-      lib <- loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp")
+      #lib <- loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp")
+      
+      lib <- withOpt(cache.mode = "none", {
+              loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp") } )
       
       lib.summary <- rbind(lib.summary,
                            data.frame( Library = basename(MS2.lib[k]),
