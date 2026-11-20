@@ -140,11 +140,13 @@ setwd(workPath) # set directory
 dat <- read.csv(f.susp.list, header=TRUE) #open suspect list
 # d.target
 
+################################################################################
 # creat a formula element list if form.search
 if (form.search)
   {
     all_formulas <- paste(dat$FORMULA, collapse = "") # Extract and concatenate all formulas
-    elements <- sort( unique(unlist(regmatches(all_formulas, gregexpr("[A-Z][a-z]?", all_formulas)))) ) # Extract unique element
+    elements <- sort( unique(unlist(regmatches(all_formulas, 
+                    gregexpr("[A-Z][a-z]?", all_formulas)))) ) # Extract unique element
     
     form.ele <- unlist(regmatches(form.ele, gregexpr("[A-Z][a-z]?", form.ele))) # create character list
     
@@ -181,6 +183,7 @@ if (check.dir){
     
   for (k in 1:length(MS2.lib))
     {
+    cat(paste("##",MS2.lib[k],"is loaded..."))
     lib <- withOpt(cache.mode = "none", {
       loadMSLibrary(paste(PatRoon.dir, "/MS2_library/", MS2.lib[k], sep = ""), "msp") } )
     
@@ -205,6 +208,7 @@ if (check.dir){
   folder <- paste("/","compil_MS2lib", sep="")
   compil.lib.path <- creat.subDir(paste(PatRoon.dir,"/MS2_library",sep=""), folder)
 
+  cat("## Export lib start...")
   patRoon::export(mslibraryM, type="msp",
                   out = paste(compil.lib.path,"/",date,"_compil_MS2lib.msp",sep="") )
   
@@ -254,7 +258,8 @@ if (check.dir){
                                     stringsAsFactors = FALSE)  )
 
     folder <- paste("/","compil_MS2lib", sep="")
-
+    
+    cat("## Export lib start...")
     patRoon::export(mslibraryM, type="msp",
                     out = paste(compil.lib.path,"/",date,"_compil_MS2lib.msp",sep="") )
     
@@ -337,8 +342,6 @@ if (pubchem.search){
   cat( "Pubchem post annotation is done to search Kow", file= f.info, append=TRUE,sep="\n")
 }
 
-
-
 ## load data info
 # df <- read.csv(paste(workPath,"/input/",sample.list,sep=""),
 #                 sep=",",header=TRUE)
@@ -362,8 +365,6 @@ if (pubchem.search){
 df <-cbind(patRoonData::exampleAnalysisInfo("positive")[, c("analysis", "replicate", "blank", "path_centroid")],
                 mode="pos",
                 sampletype=c("BK","BK","BK","SA","SA","SA") )
-
-
 
 
 df <- generateAnalysisInfo(fromCentroid = patRoonData::exampleDataPath(),
